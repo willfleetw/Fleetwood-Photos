@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,300italic,400italic");
 @import url("fontawesome-all.min.css");
+@import url("lightbox.min.css");
 /*
 	Astral by HTML5 UP
 	html5up.net | @ajlkn
@@ -1237,6 +1238,11 @@ header > p {
 .image.centered img {
   margin: 0 auto;
   width: auto;
+}
+
+/* Gallery */
+#gallery img:hover {
+  transform: scale(1.1);
 }
 
 /* Button */
