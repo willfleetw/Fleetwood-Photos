@@ -7,6 +7,8 @@
 @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,300italic,400italic');
 @import url('fontawesome-all.min.css');
 @import url('lightbox.min.css');
+@import url('leaflet.css');
+@import url('leaflet.fullscreen.css');
 
 /*
 	Astral by HTML5 UP
@@ -130,7 +132,7 @@
 		}
 
 	body {
-		background-image: url('images/overlay.png'), url('images/bg.jpg');
+		//background-image: url('images/overlay.png'), url('images/bg.jpg');
 		background-repeat: repeat, no-repeat;
 		background-size: auto, 100% 100%;
 		background-attachment: fixed;
@@ -388,6 +390,11 @@
 		}
 	}
 
+/* Map */
+	#map {
+		height: 600px;
+	}
+
 /* Button */
 
 	input[type="button"],
@@ -615,6 +622,19 @@
 				}
 			}
 		}
+	}
+
+/* Background Granim Gradient */
+	#bg-gradient {
+		position: absolute;
+    display: block;
+    width: 100%;
+    height: 100em;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+		overflow: auto;
 	}
 
 /* Wrapper */

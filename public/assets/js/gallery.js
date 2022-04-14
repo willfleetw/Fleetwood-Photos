@@ -3,7 +3,6 @@ $(loadGallery());
 async function loadGallery() {
   var photos = await $.get('images/photos.json');
   var gallery = $('#gallery > .row');
-  console.log(gallery);
 
   photos.forEach(photo => {
     var frame = $('<div>', {
