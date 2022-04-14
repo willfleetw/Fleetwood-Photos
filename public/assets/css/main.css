@@ -1501,10 +1501,10 @@ ul.actions li:first-child {
 
 /* Background Granim Gradient */
 #bg-gradient {
-  position: absolute;
+  position: fixed;
   display: block;
   width: 100%;
-  height: 100em;
+  height: 100%;
   top: 0;
   right: 0;
   bottom: 0;
@@ -1518,7 +1518,7 @@ ul.actions li:first-child {
   margin: 0 auto;
   min-height: 100vh;
   max-width: 100%;
-  padding: 4em 0;
+  padding: 2.5em 0em 0em 0em;
   display: -moz-flex;
   display: -webkit-flex;
   display: -ms-flex;
