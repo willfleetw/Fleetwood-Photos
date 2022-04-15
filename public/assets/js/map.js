@@ -1,6 +1,10 @@
 $(setupTravelMap());
 
-function setupTravelMap() {
+async function setupTravelMap() {
+  var photos = await $.get('data/photos.json');
+  var travelLog = await $.get('data/travelLog.json')
+  var latlngs = travelLog['locations'].map(loc => loc['latlng']);
+  
   var map = L.map('map', {
     fullscreenControl: true
   });
@@ -13,12 +17,6 @@ function setupTravelMap() {
     zoomOffset: -1,
     accessToken: 'pk.eyJ1Ijoid2lsbGZsZWV0dyIsImEiOiJjbDF5Y3dndWkwYmgwM2NwbTVjbnNidjI4In0.G3Em4atmvBTTDWyg4_UhRg'
   }).addTo(map);
-
-  var latlngs = [
-    [45.51, -122.68],
-    [37.77, -122.43],
-    [34.04, -118.2]
-  ];
 
   var polyline = L.polyline(latlngs, {color: 'red'}).addTo(map);
 

@@ -1,7 +1,7 @@
 $(loadGallery());
 
 async function loadGallery() {
-  var photos = await $.get('images/photos.json');
+  var photos = await $.get('data/photos.json');
   var gallery = $('#gallery > .row');
 
   photos.forEach(photo => {
