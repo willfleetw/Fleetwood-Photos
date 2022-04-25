@@ -10,7 +10,7 @@ async function loadGallery() {
     });
     
     var link = $('<a>', {
-      href: 'images/originals/' + photo['name'],
+      href: 'images/large/' + photo['name'],
       'class': 'image fit',
       'data-lightbox': 'mygallery'
     });
@@ -26,7 +26,7 @@ async function loadGallery() {
     }
     
     var thumbnail = $('<img>', {
-      src: 'images/thumbnails/' + photo['name']
+      src: 'images/small/' + photo['name'].replace('Large.jpg', 'Small.jpg')
     });
 
     link.append(thumbnail);
