@@ -12,7 +12,7 @@ async function loadGallery() {
     var link = $('<a>', {
       href: 'images/large/' + photo['name'],
       'class': 'image fit',
-      'data-lightbox': 'mygallery'
+      'data-lightbox': 'general_gallery'
     });
     
     var hasTitle = 'title' in photo;
