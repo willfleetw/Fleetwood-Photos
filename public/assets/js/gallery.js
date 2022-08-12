@@ -9,24 +9,19 @@ async function loadGallery() {
       'class': 'col-4 col-6-medium col-12-small'
     });
     
+    var photoPath = 'images/small/' + photo['name']
     var link = $('<a>', {
-      href: 'images/large/' + photo['name'],
+      href: photoPath,
       'class': 'image fit',
       'data-lightbox': 'general_gallery'
     });
     
-    var hasTitle = 'title' in photo;
-    var hasDesc = 'description' in photo;
-    if (hasTitle || hasDesc) {
-      var comment = (hasTitle ? photo['title'] : '') 
-          + (hasTitle && hasDesc ? ' - ' : '') 
-          + (hasDesc ? photo['description'] : '');
-      
-      link.attr('data-title', comment);
-    }
+    var imageLink = "images/large/" + photo['name'].replace('Small.jpg', 'Large.jpg')
+    var comment = '<a href=\'' + imageLink + '\'>Large Version</a>';
+    link.attr('data-title', comment);
     
     var thumbnail = $('<img>', {
-      src: 'images/small/' + photo['name'].replace('Large.jpg', 'Small.jpg')
+      src: photoPath
     });
 
     link.append(thumbnail);
