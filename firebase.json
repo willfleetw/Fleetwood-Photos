@@ -3,6 +3,7 @@
     "public": "public",
     "ignore": [
       "firebase.json",
+      "public/assets/sass",
       "**/.*",
       "**/node_modules/**"
     ]
