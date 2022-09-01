@@ -1,63 +1,49 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.9.3/firebase-app.js'
-import { getStorage, ref, listAll, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.9.3/firebase-storage.js'
+import { getDatabase, ref, child, get} from 'https://www.gstatic.com/firebasejs/9.9.3/firebase-database.js'
 
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+$(fillGallery)
 
-$(loadGallery());
-
-
-async function loadGallery() {
+async function fillGallery() {
   const firebaseConfig = {
-    apiKey: "AIzaSyCGvZ6f7efbH0tHfru4SkUuZvdnOHc5LiQ",
-    authDomain: "fleetwood-photos.firebaseapp.com",
-    projectId: "fleetwood-photos",
-    storageBucket: "fleetwood-photos.appspot.com",
-    appId: "1:1059550382284:web:b0d1f58561a6ac0d4a9a69"
+    apiKey: 'AIzaSyCGvZ6f7efbH0tHfru4SkUuZvdnOHc5LiQ',
+    authDomain: 'fleetwood-photos.firebaseapp.com',
+    projectId: 'fleetwood-photos',
+    databaseURL: 'https://fleetwood-photos-default-rtdb.firebaseio.com',
+    appId: '1:1059550382284:web:b0d1f58561a6ac0d4a9a69'
   };
 
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
-  const storage = getStorage(app)
-  const thumbnailsRef = ref(storage, 'thumbnail')
-  var gallery = $('#gallery > .row');
-  listAll(thumbnailsRef)
-    .then((res) => {
-      res.items.forEach((imageRef) => {
-        getDownloadURL(imageRef).then((url) => {
-          var frame = $('<div>', {
-            'class': 'col-4 col-6-medium col-12-small'
-          });
-          
-          var link = $('<a>', {
-            href: url,
-            'class': 'image fit',
-            'data-lightbox': 'general_gallery'
-          });
+  const dbRef = ref(getDatabase(app))
 
-          var thumbnail = $('<img>', {
-            src: url
-          });
+  var masonry = $('.masonry');
 
-          link.append(thumbnail);
-          frame.append(link);
-      
-          gallery.append(frame);
-        })
-      })
-    });
+  get(dbRef).then((snapshot) => {
+    for (const [key, value] of Object.entries(snapshot.val())) {
+      var tile = $('<div>', {
+        'class': 'mItem',
+      });
+      var miniURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fmini%2F' + key + '.jpg?alt=media'
+      var smallURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fsmall%2F' + key + '.jpg?alt=media'
+      var largeURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Flarge%2F' + key + '.jpg?alt=media'
+      var captionSuffix = " - <a href='" + smallURL + "'>Small File</a> and <a href='"+ largeURL + "'>Large File</a>"
 
-    $.fn.randomize = function(selector) {
-      (selector ? this.find(selector) : this).parent().each(function(){
-        $(this).children(selector).sort(function(){
-            return Math.random() - 0.5;
-        }).detach().appendTo(this);
+      var lbImg = $('<a>', {
+        href: miniURL,
+        'data-lightbox': 'gallery',
+        'data-title': key.replaceAll('_', ' ') + captionSuffix,
+      });
+      var img = $('<img>', {
+        src: miniURL,
+        'loading': 'lazy',
       });
 
-      return this;
-    };
-
-    gallery.randomize();
-  
+      lbImg.append(img);
+      tile.append(lbImg);
+      masonry.append(tile);
+    }
+  }).catch((error) => {
+    console.error(error);
+  });
 }
+
