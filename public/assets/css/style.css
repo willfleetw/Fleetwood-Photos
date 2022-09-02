@@ -1,3 +1,5 @@
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css");
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap'); 
 @import url("lightbox.min.css");
 
 /*
@@ -19,8 +21,19 @@
 /*
   Header Texts
 */
-h1 {
+h1, header, form {
   text-align: center;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  width: 400px;
+}
+
+textarea {
+  height: 400px;
 }
 
 /*
@@ -29,6 +42,7 @@ h1 {
 body {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
+  font-family: "Poppins";
 }
 
 body::-webkit-scrollbar {
