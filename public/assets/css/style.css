@@ -1,5 +1,3 @@
-@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css");
-@import url("https://fonts.googleapis.com/css?family=Poppins");
 @import url("lightbox.min.css");
 
 /*
@@ -31,11 +29,15 @@ h1 {
 body {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
-  font-family: "Poppins";
 }
 
 body::-webkit-scrollbar {
   display: none;
+}
+
+iframe {
+  position: relative;
+  display: block;
 }
 
 /*
@@ -69,33 +71,25 @@ body::-webkit-scrollbar {
 /*
   Masonry Image Gallery
 */
-
-.masonry {
-  column-count: 4;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
+img {
+  width: 100%;
 }
 
-.masonry::after {
-  content: "";
-  flex-grow: 999;
+.masonry {
+	column-count: 4;
+	column-gap: 10px;
 }
 
 .masonry .mItem {
-  position: relative;
-  flex: 1 1 auto;
-  height: calc(100vh/3);
-}
-
-img {
+  display: inline-block;
+  margin-bottom: 10px;
   width: 100%;
-  height: 100%;
-  vertical-align: middle;
-  object-fit: cover;
+  position: relative;
 }
 
+/*
+  Change style based on screen size
+*/
 @media (max-width: 1199px) {
   .masonry {
     column-count: 3;
@@ -108,6 +102,7 @@ img {
   }
 }
 
+/* Small screens (phones): Only one image column, show topnav hamburger icon */
 @media (max-width: 767px) {
   .masonry {
     column-count: 1;
