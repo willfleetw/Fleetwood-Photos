@@ -14,7 +14,7 @@ async function fillGallery() {
 
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
-  const dbRef = ref(getDatabase(app))
+  const dbRef = ref(getDatabase(app));
 
   var masonry = $('.masonry');
 
@@ -26,7 +26,7 @@ async function fillGallery() {
       var miniURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fmini%2F' + key + '.jpg?alt=media'
       var smallURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fsmall%2F' + key + '.jpg?alt=media'
       var largeURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Flarge%2F' + key + '.jpg?alt=media'
-      var captionSuffix = " - <a href='" + smallURL + "'>Small File</a> and <a href='"+ largeURL + "'>Large File</a>"
+      var captionSuffix = " - <a download target='_blank' href='" + smallURL + "'>Small File</a> and <a download target='_blank' href='"+ largeURL + "'>Large File</a>"
 
       var lbImg = $('<a>', {
         href: miniURL,

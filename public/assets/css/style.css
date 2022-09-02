@@ -1,0 +1,99 @@
+@import url("lightbox.min.css");
+
+/*
+  Background Gradient
+*/
+#bg-gradient {
+  position: fixed;
+  display: block;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: auto;
+}
+
+/*
+  Hide scrollbar
+*/
+body {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+  Top Navigation Bar
+*/
+.topnav {
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.topnav a {
+  position: relative;
+  float: left;
+  display: block;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 5px 16px;
+  text-decoration: none;
+  font-size: 30px;
+}
+
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+/* Highlight current page */
+.topnav a.active {
+  background-color: #04aa6d;
+  color: white;
+}
+
+/*
+  Masonry Image Gallery
+*/
+img {
+  width: 100%;
+}
+
+.masonry {
+	column-count: 4;
+	column-gap: 10px;
+}
+
+.masonry .mItem {
+  display: inline-block;
+  margin-bottom: 10px;
+  width: 100%;
+  position: relative;
+}
+
+/*
+  Change style based on screen size
+*/
+@media (max-width: 1199px) {
+  .masonry {
+    column-count: 3;
+  }
+}
+
+@media (max-width: 991px) {
+  .masonry {
+    column-count: 2;
+  }
+}
+
+/* Small screens (phones): Only one image column, show topnav hamburger icon */
+@media (max-width: 767px) {
+  .masonry {
+    column-count: 1;
+  }
+}

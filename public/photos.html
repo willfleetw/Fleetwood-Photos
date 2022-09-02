@@ -12,10 +12,10 @@
     <canvas id="bg-gradient"></canvas>
 
     <div class="topnav" id="topnav">
-      <a href="#" class="active">
+      <a href="index.html">
         <i class="fa-solid fa-house"></i>
       </a>
-      <a href="photos.html">
+      <a href="#" class="active">
         <i class="fa-solid fa-camera"></i>
       </a>
       <a href="#contact">
@@ -26,10 +26,25 @@
       </a>
     </div>
 
+    <div class="masonry">
+    </div>
+
     <!-- Scripts -->
     <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/lightbox.min.js"></script>
     <script src="assets/js/granim.min.js"></script>
     <script src="assets/js/gradient.js"></script>
     <script src="assets/js/navbar.js"></script>
+    <script type="module" src="assets/js/gallery.js"></script>
+
+    <script>
+      lightbox.option({
+        'disableScrolling': true,
+        'wrapAround': true,
+        'resizeDuration': 100,
+        'imageFadeDuration': 100,
+        'fadeDuration': 100,
+      });
+    </script>
   </body>
 </html>
