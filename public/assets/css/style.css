@@ -49,11 +49,6 @@ body::-webkit-scrollbar {
   display: none;
 }
 
-iframe {
-  position: relative;
-  display: block;
-}
-
 /*
   Top Navigation Bar
 */
@@ -85,40 +80,35 @@ iframe {
 /*
   Masonry Image Gallery
 */
-img {
+.grid:after {
+  content: '';
+  display: block;
+  clear: both;
+}
+
+.grid-sizer, .grid-item {
+  width: calc(25% - 6px);
+  margin-bottom: 0px;
+}
+
+.grid-item img {
   width: 100%;
 }
 
-.masonry {
-	column-count: 4;
-	column-gap: 10px;
-}
-
-.masonry .mItem {
-  display: inline-block;
-  margin-bottom: 10px;
-  width: 100%;
-  position: relative;
-}
-
-/*
-  Change style based on screen size
-*/
-@media (max-width: 1199px) {
-  .masonry {
-    column-count: 3;
+@media screen and (max-width: 1199px) {
+  .grid-sizer, .grid-item {
+    width: calc(33.33333% - 6px);
   }
 }
 
-@media (max-width: 991px) {
-  .masonry {
-    column-count: 2;
+@media screen and (max-width: 991px) {
+  .grid-sizer, .grid-item {
+    width: calc(50% - 6px);
   }
 }
 
-/* Small screens (phones): Only one image column, show topnav hamburger icon */
-@media (max-width: 767px) {
-  .masonry {
-    column-count: 1;
+@media screen and (max-width: 767px) {
+  .grid-sizer, .grid-item {
+    width: 100%;
   }
 }

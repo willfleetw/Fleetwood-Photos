@@ -1,9 +1,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.9.3/firebase-app.js'
 import { getDatabase, ref, orderByChild, get, query} from 'https://www.gstatic.com/firebasejs/9.9.3/firebase-database.js'
 
-$(fillGallery)
-
-async function fillGallery() {
+$(window).on('load', function () {
   const firebaseConfig = {
     apiKey: 'AIzaSyCGvZ6f7efbH0tHfru4SkUuZvdnOHc5LiQ',
     authDomain: 'fleetwood-photos.firebaseapp.com',
@@ -16,7 +14,7 @@ async function fillGallery() {
   const app = initializeApp(firebaseConfig);
   const dbRef = ref(getDatabase(app));
 
-  var masonry = $('.masonry');
+  var grid = $('.grid');
 
   get(query(dbRef, orderByChild('priority'))).then((snapshot) => {
     snapshot.forEach((child) => {
@@ -25,10 +23,11 @@ async function fillGallery() {
       var largeURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Flarge%2F' + child.key + '.jpg?alt=media'
       var captionSuffix = " - <a download target='_blank' href='" + smallURL + "'>Small File</a> and <a download target='_blank' href='"+ largeURL + "'>Large File</a>"
       
-      var tile = $('<div>', {
-        'class': 'mItem',
+      var divClass = 'grid-item';
+      var item = $('<div>', {
+        'class': divClass,
       });
-      var lbImg = $('<a>', {
+      var imgWrapper = $('<a>', {
         href: miniURL,
         'data-lightbox': 'gallery',
         'data-title': child.key.replaceAll('_', ' ') + captionSuffix,
@@ -38,12 +37,22 @@ async function fillGallery() {
         'loading': 'lazy',
       });
 
-      lbImg.append(img);
-      tile.append(lbImg);
-      masonry.prepend(tile);
-    })
+      imgWrapper.append(img);
+      item.append(imgWrapper);
+      grid.prepend(item); // prepend since firebase returns ascending order, and we want higher priority shown first
+    });
+    var $grid = $('.grid').imagesLoaded( function() {
+      // init Masonry after all images have loaded
+      $grid.masonry({
+        itemSelector: '.grid-item',
+        // use element for option
+        columnWidth: '.grid-sizer',
+        gutter: 6,
+        percentPosition: true
+      });
+    });
   }).catch((error) => {
     console.error(error);
   });
-}
+});
 
