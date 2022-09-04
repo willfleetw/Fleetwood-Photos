@@ -1,6 +1,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.9.3/firebase-app.js'
 import { getDatabase, ref, orderByChild, endBefore, limitToLast, get, query} from 'https://www.gstatic.com/firebasejs/9.9.3/firebase-database.js'
 
+// Initialize Firebase
 const firebaseConfig = {
   apiKey: 'AIzaSyCGvZ6f7efbH0tHfru4SkUuZvdnOHc5LiQ',
   authDomain: 'fleetwood-photos.firebaseapp.com',
@@ -8,19 +9,44 @@ const firebaseConfig = {
   databaseURL: 'https://fleetwood-photos-default-rtdb.firebaseio.com',
   appId: '1:1059550382284:web:b0d1f58561a6ac0d4a9a69'
 };
-
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const dbRef = ref(getDatabase(app));
+
+// Start listening for screen size changes
+var numImagesPerPage;
+var mqls = [
+  window.matchMedia("screen and (max-width: 1199px)"),
+  window.matchMedia("screen and (max-width: 991px)"),
+  window.matchMedia("screen and (max-width: 767px)")
+];
+function handleScreenSize(mql) {
+  numImagesPerPage = 12;
+  if (mqls[0].matches) {
+    numImagesPerPage = 10;
+  } 
+  if (mqls[1].matches) {
+    numImagesPerPage = 8;
+  } 
+  if (mqls[2].matches) {
+    numImagesPerPage = 5;
+  }
+}
+for (var i=0; i<mqls.length; i++){
+  handleScreenSize(mqls[i]);
+  mqls[i].addEventListener('change', handleScreenSize);
+}
+
+// Initialize Masonry
 var $grid = $('.grid').masonry({
   itemSelector: '.grid-item',
-  // use element for option
   columnWidth: '.grid-sizer',
   gutter: 6,
   percentPosition: true
 });
-var page = getFirstPage(dbRef);
-page = page.then(getNextPage);
+
+// Actual work
+await getPage();
+
 
 function addImageTile(image) {
   var miniURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fmini%2F' + image.name + '.jpg?alt=media'
@@ -50,8 +76,12 @@ function addImageTile(image) {
 };
 
 var cursor = null;
-function getFirstPage() {
-  return get(query(dbRef, orderByChild('priority'), limitToLast(10))).then(snapshot => {
+async function getPage() {
+  var dbQuery = query(dbRef, orderByChild('priority'), limitToLast(numImagesPerPage));
+  if (cursor != null) {
+    dbQuery = query(dbRef, orderByChild('priority'), limitToLast(numImagesPerPage), endBefore(cursor.meta.priority, cursor.name));
+  }
+  await get(dbQuery).then(snapshot => {
     var images = [];
     snapshot.forEach(child => {
       images.unshift({"name": child.key, "meta": child.val()});
@@ -63,18 +93,3 @@ function getFirstPage() {
     console.log(error);
   });
 }
-
-function getNextPage() {
-  get(query(dbRef, orderByChild('priority'), limitToLast(10), endBefore(cursor.meta.priority, cursor.name))).then(snapshot => {
-    var images = [];
-    snapshot.forEach(child => {
-      images.unshift({"name": child.key, "meta": child.val()});
-    });
-    cursor = images[images.length-1];
-
-    images.forEach(image => addImageTile(image));
-  }).catch(error => {
-    console.log(error);
-  });
-}
-
