@@ -53,7 +53,7 @@ body::-webkit-scrollbar {
   Top Navigation Bar
 */
 .topnav {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -88,7 +88,12 @@ body::-webkit-scrollbar {
 
 .grid-sizer, .grid-item {
   width: calc(25% - 6px);
-  margin-bottom: 0px;
+  margin-bottom: 6px;
+  height: 276.4px;
+}
+
+.grid-item--height2 {
+  height: 628.63px;
 }
 
 .grid-item img {
