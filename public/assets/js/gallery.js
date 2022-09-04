@@ -10,25 +10,27 @@ const firebaseConfig = {
   appId: '1:1059550382284:web:b0d1f58561a6ac0d4a9a69'
 };
 const app = initializeApp(firebaseConfig);
-const dbRef = ref(getDatabase(app));
+const database = getDatabase(app);
+const dbRef = ref(database, '/images/');
+const databaseImageCount = await getImageCount();
 
 // Start listening for screen size changes
-var numImagesPerPage;
+var imageQueryLimit;
 var mqls = [
   window.matchMedia("screen and (max-width: 1199px)"),
   window.matchMedia("screen and (max-width: 991px)"),
   window.matchMedia("screen and (max-width: 767px)")
 ];
 function handleScreenSize(mql) {
-  numImagesPerPage = 12;
+  imageQueryLimit = 12;
   if (mqls[0].matches) {
-    numImagesPerPage = 10;
+    imageQueryLimit = 10;
   } 
   if (mqls[1].matches) {
-    numImagesPerPage = 8;
+    imageQueryLimit = 8;
   } 
   if (mqls[2].matches) {
-    numImagesPerPage = 5;
+    imageQueryLimit = 5;
   }
 }
 for (var i=0; i<mqls.length; i++){
@@ -44,9 +46,18 @@ var $grid = $('.grid').masonry({
   percentPosition: true
 });
 
-// Actual work
-await getPage();
+window.addEventListener('scroll', async () => {
+  if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight) {
+    throttle(async () => {
+      await loadImages();
+    }, 1000)
+  }
+}, {
+  passive: true
+});
 
+var cursor = null;
+await loadImages();
 
 function addImageTile(image) {
   var miniURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fmini%2F' + image.name + '.jpg?alt=media'
@@ -75,11 +86,27 @@ function addImageTile(image) {
   $grid.append(tile).masonry('appended', tile).masonry();
 };
 
-var cursor = null;
-async function getPage() {
-  var dbQuery = query(dbRef, orderByChild('priority'), limitToLast(numImagesPerPage));
+var throttleTimer;
+ 
+const throttle = (callback, time) => {
+  if (throttleTimer) return;
+ 
+  throttleTimer = true;
+ 
+  setTimeout(() => {
+    callback();
+    throttleTimer = false;
+  }, time);
+};
+
+async function loadImages() {
+  if ($('.grid-item').length >= databaseImageCount) {
+    return; // no more images
+  }
+  
+  var dbQuery = query(dbRef, orderByChild('priority'), limitToLast(imageQueryLimit));
   if (cursor != null) {
-    dbQuery = query(dbRef, orderByChild('priority'), limitToLast(numImagesPerPage), endBefore(cursor.meta.priority, cursor.name));
+    dbQuery = query(dbRef, orderByChild('priority'), limitToLast(imageQueryLimit), endBefore(cursor.meta.priority, cursor.name));
   }
   await get(dbQuery).then(snapshot => {
     var images = [];
@@ -92,4 +119,9 @@ async function getPage() {
   }).catch(error => {
     console.log(error);
   });
+}
+
+async function getImageCount() {
+  var snapshot = await get(ref(database, "imageCount"))
+  return snapshot.val()
 }
