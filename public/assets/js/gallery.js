@@ -38,6 +38,15 @@ for (var i=0; i<mqls.length; i++){
   mqls[i].addEventListener('change', handleScreenSize);
 }
 
+var loader = document.querySelector('.loader');
+function hideLoader() {
+  loader.classList.remove('show');
+};
+
+function showLoader() {
+  loader.classList.add('show');
+};
+
 // Initialize Masonry
 var $grid = $('.grid').masonry({
   itemSelector: '.grid-item',
@@ -46,18 +55,23 @@ var $grid = $('.grid').masonry({
   percentPosition: true
 });
 
+var cursor = null;
+showLoader();
+await loadImages(); // load images once before listening for scrolling
+hideLoader();
+
 window.addEventListener('scroll', async () => {
   if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight) {
+    showLoader();
     throttle(async () => {
       await loadImages();
+      hideLoader();
     }, 1000)
   }
 }, {
   passive: true
 });
 
-var cursor = null;
-await loadImages();
 
 function addImageTile(image) {
   var miniURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fmini%2F' + image.name + '.jpg?alt=media'
@@ -87,7 +101,6 @@ function addImageTile(image) {
 };
 
 var throttleTimer;
- 
 const throttle = (callback, time) => {
   if (throttleTimer) return;
  
@@ -103,7 +116,6 @@ async function loadImages() {
   if ($('.grid-item').length >= databaseImageCount) {
     return; // no more images
   }
-  
   var dbQuery = query(dbRef, orderByChild('priority'), limitToLast(imageQueryLimit));
   if (cursor != null) {
     dbQuery = query(dbRef, orderByChild('priority'), limitToLast(imageQueryLimit), endBefore(cursor.meta.priority, cursor.name));
