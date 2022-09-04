@@ -1,5 +1,5 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.9.3/firebase-app.js'
-import { getDatabase, ref, child, get} from 'https://www.gstatic.com/firebasejs/9.9.3/firebase-database.js'
+import { getDatabase, ref, orderByChild, get, query} from 'https://www.gstatic.com/firebasejs/9.9.3/firebase-database.js'
 
 $(fillGallery)
 
@@ -18,20 +18,20 @@ async function fillGallery() {
 
   var masonry = $('.masonry');
 
-  get(dbRef).then((snapshot) => {
-    for (const [key, value] of Object.entries(snapshot.val())) {
+  get(query(dbRef, orderByChild('priority'))).then((snapshot) => {
+    snapshot.forEach((child) => {
+      var miniURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fmini%2F' + child.key + '.jpg?alt=media'
+      var smallURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fsmall%2F' + child.key + '.jpg?alt=media'
+      var largeURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Flarge%2F' + child.key + '.jpg?alt=media'
+      var captionSuffix = " - <a download target='_blank' href='" + smallURL + "'>Small File</a> and <a download target='_blank' href='"+ largeURL + "'>Large File</a>"
+      
       var tile = $('<div>', {
         'class': 'mItem',
       });
-      var miniURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fmini%2F' + key + '.jpg?alt=media'
-      var smallURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fsmall%2F' + key + '.jpg?alt=media'
-      var largeURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Flarge%2F' + key + '.jpg?alt=media'
-      var captionSuffix = " - <a download target='_blank' href='" + smallURL + "'>Small File</a> and <a download target='_blank' href='"+ largeURL + "'>Large File</a>"
-
       var lbImg = $('<a>', {
         href: miniURL,
         'data-lightbox': 'gallery',
-        'data-title': key.replaceAll('_', ' ') + captionSuffix,
+        'data-title': child.key.replaceAll('_', ' ') + captionSuffix,
       });
       var img = $('<img>', {
         src: miniURL,
@@ -40,8 +40,8 @@ async function fillGallery() {
 
       lbImg.append(img);
       tile.append(lbImg);
-      masonry.append(tile);
-    }
+      masonry.prepend(tile);
+    })
   }).catch((error) => {
     console.error(error);
   });
