@@ -95,7 +95,7 @@ async function getImages() {
   return images;
 }
 
-async function loadImages() {
+async function loadImages(delay = 600) {
   const throttle = (callback, time) => {
     if (throttleTimer) return;
    
@@ -114,7 +114,7 @@ async function loadImages() {
       showImages(images);
     }
     hideLoader();
-  }, 1000);
+  }, delay);
 }
 
 // Start listening for screen size changes
@@ -143,7 +143,7 @@ async function loadImages() {
 })();
 
 // Load initial page of images, then begin infinite scrolling
-await loadImages();
+await loadImages(0);
 window.addEventListener('scroll', async () => {
   if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight) {
     await loadImages();
