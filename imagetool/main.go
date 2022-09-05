@@ -212,7 +212,7 @@ func uploadFile(fileInfo fs.FileInfo, dbClient *db.Client, bucket *storage.Bucke
 	}
 
 	imageTitle := fileInfo.Name()[:len(fileInfo.Name())-4]
-	fileDBRef := dbClient.NewRef(imageTitle)
+	fileDBRef := dbClient.NewRef("images/" + imageTitle)
 	imageMetaData := make(map[string]interface{}, 0)
 	imageMetaData["blurHash"] = blurHash
 	imageMetaData["imageSize"] = fileInfo.Size()
@@ -258,4 +258,17 @@ func main() {
 		go uploadFile(fi, dbClient, bucket, &wg)
 	}
 	wg.Wait()
+
+	// Now we need to update total image count
+	imagesRef := dbClient.NewRef("images")
+	imageNames := make(map[string]interface{}, 0)
+	err = imagesRef.GetShallow(context.Background(), &imageNames)
+	if err != nil {
+		log.Fatalf("failed to get total image count: %v\n", err)
+	}
+	imageCountRef := dbClient.NewRef("imageCount")
+	err = imageCountRef.Set(context.Background(), len(imageNames))
+	if err != nil {
+		log.Fatalf("failed to set new image count %v: %v", len(imageNames), err)
+	}
 }
