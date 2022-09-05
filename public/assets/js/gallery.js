@@ -1,7 +1,9 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.9.3/firebase-app.js'
 import { getDatabase, ref, orderByChild, endBefore, limitToLast, get, query} from 'https://www.gstatic.com/firebasejs/9.9.3/firebase-database.js'
 
-// Initialize Firebase
+/*
+  Firebase Variables
+*/
 const firebaseConfig = {
   apiKey: 'AIzaSyCGvZ6f7efbH0tHfru4SkUuZvdnOHc5LiQ',
   authDomain: 'fleetwood-photos.firebaseapp.com',
@@ -12,86 +14,61 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const dbRef = ref(database, '/images/');
-const databaseImageCount = await getImageCount();
 
-// Start listening for screen size changes
-var imageQueryLimit;
-var mqls = [
-  window.matchMedia("screen and (max-width: 1199px)"),
-  window.matchMedia("screen and (max-width: 991px)"),
-  window.matchMedia("screen and (max-width: 767px)")
-];
-function handleScreenSize(mql) {
-  imageQueryLimit = 12;
-  if (mqls[0].matches) {
-    imageQueryLimit = 10;
-  } 
-  if (mqls[1].matches) {
-    imageQueryLimit = 8;
-  } 
-  if (mqls[2].matches) {
-    imageQueryLimit = 5;
-  }
-}
-for (var i=0; i<mqls.length; i++){
-  handleScreenSize(mqls[i]);
-  mqls[i].addEventListener('change', handleScreenSize);
-}
+/*
+Image Gallery Pagination and Infinite Scrolling Variables
+*/
+const loader = $('.loader');
+const databaseImageCount = (await get(ref(database, "imageCount"))).val();
+let cursor = null;
+let imageQueryLimit = 0;
+let throttleTimer;
 
-var loader = document.querySelector('.loader');
-function hideLoader() {
-  loader.classList.remove('show');
-};
-
-function showLoader() {
-  loader.classList.add('show');
-};
-
-// Initialize Masonry
-var $grid = $('.grid').masonry({
+let $grid = $('.grid').masonry({
   itemSelector: '.grid-item',
   columnWidth: '.grid-sizer',
   gutter: 6,
   percentPosition: true
 });
 
-var cursor = null;
-showLoader();
-await loadImages(); // load images once before listening for scrolling
-hideLoader();
+// Utility Functions
+function hideLoader() {
+  loader.removeClass('show');
+};
 
-window.addEventListener('scroll', async () => {
-  if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight) {
-    showLoader();
-    throttle(async () => {
-      await loadImages();
-      hideLoader();
-    }, 1000)
-  }
-}, {
-  passive: true
-});
+function showLoader() {
+  loader.addClass('show');
+};
 
+function hasMoreImages() {
+  return $('.grid-item').length < databaseImageCount;
+}
+
+function showImages(images) {
+  images.forEach(image => {
+    addImageTile(image);
+  });
+}
 
 function addImageTile(image) {
-  var miniURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fmini%2F' + image.name + '.jpg?alt=media'
-  var smallURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fsmall%2F' + image.name + '.jpg?alt=media'
-  var largeURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Flarge%2F' + image.name + '.jpg?alt=media'
-  var captionSuffix = " - <a download target='_blank' href='" + smallURL + "'>Small File</a> and <a download target='_blank' href='"+ largeURL + "'>Large File</a>"
+  let miniURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fmini%2F' + image.name + '.jpg?alt=media'
+  let smallURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fsmall%2F' + image.name + '.jpg?alt=media'
+  let largeURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Flarge%2F' + image.name + '.jpg?alt=media'
+  let captionSuffix = " - <a download target='_blank' href='" + smallURL + "'>Small File</a> and <a download target='_blank' href='"+ largeURL + "'>Large File</a>"
   
-  var tileClass = 'grid-item';
+  let tileClass = 'grid-item';
   if (image.meta.height > image.meta.width) {
     tileClass += ' grid-item--height2';
   }
-  var tile = $('<div>', {
+  let tile = $('<div>', {
     'class': tileClass,
   });
-  var imgWrapper = $('<a>', {
+  let imgWrapper = $('<a>', {
     href: miniURL,
     'data-lightbox': 'gallery',
     'data-title': image.name.replaceAll('_', ' ') + captionSuffix,
   });
-  var img = $('<img>', {
+  let img = $('<img>', {
     src: miniURL,
     'loading': 'lazy',
   });
@@ -100,40 +77,77 @@ function addImageTile(image) {
   $grid.append(tile).masonry('appended', tile).masonry();
 };
 
-var throttleTimer;
-const throttle = (callback, time) => {
-  if (throttleTimer) return;
- 
-  throttleTimer = true;
- 
-  setTimeout(() => {
-    callback();
-    throttleTimer = false;
-  }, time);
-};
-
-async function loadImages() {
-  if ($('.grid-item').length >= databaseImageCount) {
-    return; // no more images
-  }
-  var dbQuery = query(dbRef, orderByChild('priority'), limitToLast(imageQueryLimit));
+async function getImages() {
+  let dbQuery = query(dbRef, orderByChild('priority'), limitToLast(imageQueryLimit));
   if (cursor != null) {
     dbQuery = query(dbRef, orderByChild('priority'), limitToLast(imageQueryLimit), endBefore(cursor.meta.priority, cursor.name));
   }
+  let images = [];
   await get(dbQuery).then(snapshot => {
-    var images = [];
     snapshot.forEach(child => {
       images.unshift({"name": child.key, "meta": child.val()});
     });
     cursor = images[images.length-1];
-
-    images.forEach(image => addImageTile(image));
   }).catch(error => {
     console.log(error);
   });
+
+  return images;
 }
 
-async function getImageCount() {
-  var snapshot = await get(ref(database, "imageCount"))
-  return snapshot.val()
+async function loadImages() {
+  const throttle = (callback, time) => {
+    if (throttleTimer) return;
+   
+    throttleTimer = true;
+   
+    setTimeout(() => {
+      callback();
+      throttleTimer = false;
+    }, time);
+  };
+
+  showLoader();
+  throttle(async () => {
+    if (hasMoreImages()) {
+      let images = await getImages();
+      showImages(images);
+    }
+    hideLoader();
+  }, 1000);
 }
+
+// Start listening for screen size changes
+(() => {
+  let mqls = [
+    window.matchMedia("screen and (max-width: 1199px)"),
+    window.matchMedia("screen and (max-width: 991px)"),
+    window.matchMedia("screen and (max-width: 767px)")
+  ];
+  function handleScreenSize(mql) {
+    imageQueryLimit = 12;
+    if (mqls[0].matches) {
+      imageQueryLimit = 10;
+    } 
+    if (mqls[1].matches) {
+      imageQueryLimit = 8;
+    } 
+    if (mqls[2].matches) {
+      imageQueryLimit = 5;
+    }
+  }
+  for (var i=0; i<mqls.length; i++){
+    handleScreenSize(mqls[i]);
+    mqls[i].addEventListener('change', handleScreenSize);
+  }
+})();
+
+// Load initial page of images, then begin infinite scrolling
+await loadImages();
+window.addEventListener('scroll', async () => {
+  if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight) {
+    await loadImages();
+  }
+}, {
+  passive: true
+});
