@@ -74,7 +74,6 @@ let iconCodes = [];
 geolocate();
 
 async function updateLocation(latitude, longitude) {
-  console.log(`Location: ${latitude} ${longitude}`)
   let zoomLevel = 13;
   if (typeof map.getZoom() !== "undefined") {
     zoomLevel = map.getZoom();
@@ -86,7 +85,6 @@ async function updateLocation(latitude, longitude) {
 
   let url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=774e68a2ef152559f5a0f30f246938cd`;
   respJson = await (await fetch(url)).json();
-  console.log(respJson);
 
   let main = respJson.main;
   let weather = respJson.weather[0];
@@ -115,12 +113,12 @@ async function geolocate() {
     address = "Bellingham, WA"; // default
   }
 
-  let url = "http://api.positionstack.com/v1/forward?access_key=5967fc249481b53190c6d63e3dcd32fb&query=" + encodeURIComponent(address);
+  let url = "https://api.geoapify.com/v1/geocode/search?text=" + encodeURIComponent(address) + "&apiKey=4e915bbd12764b5191159f65efbf4f47";
   respJson = await (await fetch(url)).json();
   
-  const loc = respJson.data[0];
+  const loc = respJson.features[0].properties;
 
-  updateLocation(loc.latitude, loc.longitude);
+  updateLocation(loc.lat, loc.lon);
 }
 
 function convertKtoF(kelvin) {
