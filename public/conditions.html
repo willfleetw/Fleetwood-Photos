@@ -27,31 +27,38 @@
       </a>
     </div>
 
-    <div class="location-input">
-      <input type="text" placeholder="Location" name="geolocation" id="geolocation" onkeydown="return processKey(event)" />
-      <button type="button" id="getgeolocation" onclick="geolocate()">Get Conditions</button>
-    </div>
-
-  <div class="conditions">
-      <div class="suntime" id="sunrise">
-        <i id="sunrise-icon" class="wi wi-sunrise"></i>
-        <div class="time" id="sunrise-time"></div>
+    
+    <div class="conditions">
+      <div class="location-input">
+        <input type="text" placeholder="Location" name="geolocation" id="geolocation" onkeydown="return processKey(event)" />
+        <button type="button" id="getgeolocation" onclick="geolocate()">Get Conditions</button>
       </div>
-      <div class="suntime" id="sunset">
-        <i id="sunrise-icon" class="wi wi-sunset"></i>
-        <div class="time" id="sunset-time"></div>
+      <div class="info">
+        <div class="suntime" id="sunrise">
+          <i id="sunrise-icon" class="wi wi-sunrise"></i>
+          <div class="time" id="sunrise-time"></div>
+        </div>
+        <div class="suntime" id="sunset">
+          <i id="sunrise-icon" class="wi wi-sunset"></i>
+          <div class="time" id="sunset-time"></div>
+        </div>
+        
+        <p>Golden Hours</p>
+        <div class="time-range" id="goldenhour-morning"></div>
+        <div class="time-range" id="goldenhour-evening"></div>
+        
+        <div class="weather-card">
+          <i id="weather-icon" class="wi wi-night-sleet"></i>
+          <div id="weather-description"></div>
+          <div class="temperature" id="temp-actual"></div>
+          <div class="temperature" id="temp-feels-like"></div>
+        </div>
       </div>
-      <div class="time-range" id="goldenhour-morning"></div>
-      <div class="time-range" id="goldenhour-evening"></div>
-
-      <div class="weather-card">
-        <i id="weather-icon" class="wi wi-night-sleet"></i>
-        <div id="weather-description"></div>
-        <div class="temperature" id="temp-actual"></div>
-        <div class="temperature" id="temp-feels-like"></div>
+      <div class="map-container">
+        <div class="map-frame">
+          <div id="map"></div>
+        </div>
       </div>
-
-      <div id="map"></div>
     </div>
 
     <!-- External Scripts -->

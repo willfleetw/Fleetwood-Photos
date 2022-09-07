@@ -3,6 +3,26 @@
 @import url("lightbox.min.css"); /* Custom lightbox css to change location of images */
 @import url("weather-icons.min.css");
 
+html, body {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  display: block;
+}
+
+/*
+  Hide scrollbar
+*/
+body {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+  font-family: "Poppins";
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
 /*
   Background Gradient
 */
@@ -20,60 +40,13 @@
 }
 
 /*
-  Conditions Results
-*/
-.location-input {
-  text-align: center;
-}
-
-.conditions {
-  text-align: center;
-}
-
-.wi {
-  font-size: 42px;
-}
-
-#map {
-  height: 500px; /* TODO Make responsive */
-}
-
-/*
-  Input formatting
-*/
-input, textarea, select {
-  font-family: inherit;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  width: 400px;
-  outline: none;
-}
-
-textarea {
-  height: 400px;
-}
-
-/*
-  Hide scrollbar
-*/
-body {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-  font-family: "Poppins";
-}
-
-body::-webkit-scrollbar {
-  display: none;
-}
-
-/*
   Top Navigation Bar
 */
 .topnav {
-  margin-bottom: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 10%;
 }
 
 .topnav a {
@@ -92,6 +65,71 @@ body::-webkit-scrollbar {
 .topnav a.active {
   background-color: #04aa6d;
   color: white;
+}
+
+/*
+  Conditions
+*/
+
+.location-input {
+  flex: 1 1 auto;
+  text-align: center;
+  flex-direction: row;
+}
+
+.location-input input {
+  width: 70%;
+}
+
+.conditions {
+  height: 90%;
+  display: flex;
+  flex-direction: column;
+}
+
+.info {
+  flex: 1 1 auto;
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.suntime {
+  display: inline-block;
+  margin-inline: 5px;
+}
+.wi {
+  font-size: 42px;
+  display: block;
+}
+
+.map-container {
+  height: 60%;
+  padding-right: 10px;
+  padding-left: 10px;
+  padding-bottom: 10px;
+}
+
+.map-frame {
+  height: 100%;
+  width: 100%;
+}
+
+#map {
+  height: 100%;
+}
+
+/*
+  Input formatting
+*/
+input, textarea, select {
+  font-family: inherit;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  outline: none;
+}
+
+textarea {
+  height: 400px;
 }
 
 /*
