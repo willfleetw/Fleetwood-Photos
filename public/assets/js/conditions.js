@@ -1,3 +1,5 @@
+import LatLon from 'https://cdn.jsdelivr.net/npm/geodesy@2.4.0/latlon-spherical.min.js';
+
 const map = L.map('map');
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
@@ -6,6 +8,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 map.on('click', onMapClick);
 let marker = L.marker([50.5, 30.5]).addTo(map);
 marker.setOpacity(0);
+let sunriseAzimuthLine = null, sunsetAzimuthLine = null;
 
 let iconCodes = [];
 (() => {
@@ -71,9 +74,57 @@ let iconCodes = [];
   iconCodes[906] = "hail";
   iconCodes[957] = "strong-wind";
 })();
-geolocate();
+
+let moonPhaseIcons = [];
+let moonPhaseNames = [];
+(() => {
+  moonPhaseIcons[0] = "wi-moon-alt-new";
+  moonPhaseIcons[1] = "wi-moon-alt-waxing-crescent-1";
+  moonPhaseIcons[2] = "wi-moon-alt-waxing-crescent-2";
+  moonPhaseIcons[3] = "wi-moon-alt-waxing-crescent-3";
+  moonPhaseIcons[4] = "wi-moon-alt-waxing-crescent-4";
+  moonPhaseIcons[5] = "wi-moon-alt-waxing-crescent-5";
+  moonPhaseIcons[6] = "wi-moon-alt-waxing-crescent-6";
+  moonPhaseIcons[7] = "wi-moon-alt-first-quarter";
+  moonPhaseIcons[8] = "wi-moon-alt-waxing-gibbous-1";
+  moonPhaseIcons[9] = "wi-moon-alt-waxing-gibbous-2";
+  moonPhaseIcons[10] = "wi-moon-alt-waxing-gibbous-3";
+  moonPhaseIcons[11] = "wi-moon-alt-waxing-gibbous-4";
+  moonPhaseIcons[12] = "wi-moon-alt-waxing-gibbous-5";
+  moonPhaseIcons[13] = "wi-moon-alt-waxing-gibbous-6";
+  moonPhaseIcons[14] = "wi-moon-alt-full";
+  moonPhaseIcons[15] = "wi-moon-alt-waning-gibbous-1";
+  moonPhaseIcons[16] = "wi-moon-alt-waning-gibbous-2";
+  moonPhaseIcons[17] = "wi-moon-alt-waning-gibbous-3";
+  moonPhaseIcons[18] = "wi-moon-alt-waning-gibbous-4";
+  moonPhaseIcons[19] = "wi-moon-alt-waning-gibbous-5";
+  moonPhaseIcons[20] = "wi-moon-alt-waning-gibbous-6";
+  moonPhaseIcons[21] = "wi-moon-alt-third-quarter";
+  moonPhaseIcons[22] = "wi-moon-alt-waning-crescent-1";
+  moonPhaseIcons[23] = "wi-moon-alt-waning-crescent-2";
+  moonPhaseIcons[24] = "wi-moon-alt-waning-crescent-3";
+  moonPhaseIcons[25] = "wi-moon-alt-waning-crescent-4";
+  moonPhaseIcons[26] = "wi-moon-alt-waning-crescent-5";
+  moonPhaseIcons[27] = "wi-moon-alt-waning-crescent-6";
+
+  moonPhaseNames[0] = "New Moon";
+  moonPhaseNames[1] = "Waxing Crescent";
+  moonPhaseNames[2] = "First Quarter";
+  moonPhaseNames[3] = "Waxing Gibbous";
+  moonPhaseNames[4] = "Full Moon";
+  moonPhaseNames[5] = "Waning Gibbous";
+  moonPhaseNames[6] = "Last Quarter";
+  moonPhaseNames[7] = "Waning Crescent";
+})();
 
 async function updateLocation(latitude, longitude) {
+  if (sunriseAzimuthLine != null) {
+    sunriseAzimuthLine.remove();
+  }
+  if (sunsetAzimuthLine != null) {
+    sunsetAzimuthLine.remove();
+  }
+
   let zoomLevel = 13;
   if (typeof map.getZoom() !== "undefined") {
     zoomLevel = map.getZoom();
@@ -84,7 +135,7 @@ async function updateLocation(latitude, longitude) {
   marker.setOpacity(1);
 
   let url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=774e68a2ef152559f5a0f30f246938cd`;
-  respJson = await (await fetch(url)).json();
+  let respJson = await (await fetch(url)).json();
 
   let main = respJson.main;
   let weather = respJson.weather[0];
@@ -105,40 +156,55 @@ async function updateLocation(latitude, longitude) {
 
   $('#temp-actual').text(`Temperature: ${convertKtoF(main.temp).toFixed(0)} °F`);
   $('#weather-description').text(`Weather: ${capitalizeFirstLetter(weather.description)}`);
+
+  $('.info').css('display', 'block');
+
+  let sunriseAzimuth = convertRtoD(SunCalc.getPosition(times.sunrise, latitude, longitude).azimuth) + 180;
+  let sunsetAzimuth = convertRtoD(SunCalc.getPosition(times.sunset, latitude, longitude).azimuth) + 180;
+
+  let p1 = new LatLon(latitude, longitude);
+  let p2 = p1.destinationPoint(50000, sunriseAzimuth);
+  sunriseAzimuthLine = L.polyline([[latitude, longitude], [p2.lat, p2.lon]], {color: "red"}).addTo(map);
+  p2 = p1.destinationPoint(50000, sunsetAzimuth);
+  sunsetAzimuthLine = L.polyline([[latitude, longitude], [p2.lat, p2.lon]], {color: "red"}).addTo(map);
 }
 
 async function geolocate() {
   let address = $('#geolocation').val().trim();
   if (address.length == 0) {
-    address = "Bellingham, WA"; // default
+    return;
   }
 
   let url = "https://api.geoapify.com/v1/geocode/search?text=" + encodeURIComponent(address) + "&apiKey=4e915bbd12764b5191159f65efbf4f47";
-  respJson = await (await fetch(url)).json();
+  let respJson = await (await fetch(url)).json();
   
   const loc = respJson.features[0].properties;
-
+  map.setZoom(13);
   updateLocation(loc.lat, loc.lon);
+}
+window.geolocate = geolocate;
+
+function getMoonPhase() {
+  let moonPhase = SunCalc.getMoonIllumination(new Date()).phase;
+  $('#moonphase-icon').addClass(moonPhaseIcons[Math.round(moonPhase*27)]);
+  $('#moonphase-name').text(moonPhaseNames[Math.round(moonPhase * 7)]);
 }
 
 function convertKtoF(kelvin) {
   return 1.8*(kelvin-273) + 32;
 }
 
-function capitalizeFirstLetter(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
+function convertRtoD(radians) {
+  return radians * (180/Math.PI)
 }
 
-function processKey(e)
-{
-    if (null == e)
-        e = window.event ;
-    if (e.keyCode == 13)  {
-        $('#getgeolocation').trigger('click');
-        return false;
-    }
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 function onMapClick(e) {
   updateLocation(e.latlng.lat, e.latlng.lng);
 }
+
+getMoonPhase();
+updateLocation(48.769768, -122.485886);

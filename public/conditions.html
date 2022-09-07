@@ -42,6 +42,10 @@
           <i id="sunrise-icon" class="wi wi-sunset"></i>
           <div class="time" id="sunset-time"></div>
         </div>
+        <div class="suntime" id="moonphase">
+          <i id="moonphase-icon" class="wi"></i>
+          <div class="time" id="moonphase-name"></div>
+        </div>
         
         <p>Golden Hours</p>
         <div class="time-range" id="goldenhour-morning"></div>
@@ -68,10 +72,20 @@
     <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin=""></script>
     
     <!-- Internal Scripts -->
-    <script src="assets/js/conditions.js"></script>
+    <script type="module" src="assets/js/conditions.js"></script>
 
     <!-- Initial Static Configuration -->
     <script>
+      function processKey(e)
+      {
+          if (null == e)
+              e = window.event ;
+          if (e.keyCode == 13)  {
+              $('#getgeolocation').trigger('click');
+              return false;
+          }
+      }
+
       new Granim({
         element: '#bg-gradient',
         direction: 'left-right',
