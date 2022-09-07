@@ -1,6 +1,7 @@
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css");
 @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap'); 
 @import url("lightbox.min.css"); /* Custom lightbox css to change location of images */
+@import url("weather-icons.min.css");
 
 /*
   Background Gradient
@@ -19,17 +20,33 @@
 }
 
 /*
-  Header Texts
+  Conditions Results
 */
-h1, header, form {
+.location-input {
   text-align: center;
 }
 
+.conditions {
+  text-align: center;
+}
+
+.wi {
+  font-size: 42px;
+}
+
+#map {
+  height: 500px; /* TODO Make responsive */
+}
+
+/*
+  Input formatting
+*/
 input, textarea, select {
   font-family: inherit;
   border-radius: 5px;
   margin-bottom: 10px;
   width: 400px;
+  outline: none;
 }
 
 textarea {

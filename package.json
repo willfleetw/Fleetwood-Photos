@@ -1,7 +1,9 @@
 {
   "dependencies": {
     "firebase": "^9.6.10",
+    "granim": "^2.0.0",
+    "http-server": "^14.1.1",
     "jquery": "^3.6.0",
-    "granim": "^2.0.0"
+    "synk": "^0.0.02"
   }
 }

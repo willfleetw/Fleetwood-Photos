@@ -6,6 +6,7 @@
       "public/assets/sass",
       "**/.*",
       "**/node_modules/**"
-    ]
+    ],
+    "cleanUrls": true
   }
 }
