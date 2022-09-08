@@ -12,11 +12,10 @@ Additional features include a geographical conditions page, making photography t
 
 ## TODO
 **High Priority:**
-- Improve navbar styling
-- Image tagging, sorting, filtering options
+- Hide images until loaded, fade-in?
+- Better styling for contact page
+- Add favicon.ico
 
 **Low Priority:**
-- Better styling for contact page
 - Add info page? (Based on readme?)
 - Constellation info?
-- Add favicon.ico
