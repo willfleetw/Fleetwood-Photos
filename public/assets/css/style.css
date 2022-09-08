@@ -1,22 +1,21 @@
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css");
 @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap'); 
-@import url("lightbox.min.css"); /* Custom lightbox css to change location of images */
+@import url("lightbox.min.css"); /* Custom lightbox css to change location of nav images */
 @import url("weather-icons.min.css");
 
 html, body {
-  height: 100%;
-  padding: 0;
-  margin: 0;
   display: block;
+  margin: 0;
+  padding: 0;
 }
 
 /*
   Hide scrollbar
 */
 body {
+  font-family: "Poppins";
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
-  font-family: "Poppins";
 }
 
 body::-webkit-scrollbar {
@@ -27,71 +26,202 @@ body::-webkit-scrollbar {
   Background Gradient
 */
 #bg-gradient {
-  position: fixed;
-  display: block;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  right: 0;
   bottom: 0;
+  display: block;
+  height: 100%;
   left: 0;
   overflow: auto;
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 100%;
   z-index: -1;
 }
 
 /*
   Top Navigation Bar
 */
-.topnav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 10%;
+.navbar {
+  background-color: #333;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1;
 }
 
-.topnav a {
-  color: #f2f2f2;
-  padding: 5px 16px;
+.navitem {
+  display: block;
+  float: left;
+  font-size: 32px;
+  padding: 5px 10px 0px;
+  text-align: center;
   text-decoration: none;
-  font-size: 30px;
 }
 
-.topnav a:hover {
-  background-color: #ddd;
-  color: black;
+.gallery-control {
+  float: right;
 }
 
-/* Highlight current page */
-.topnav a.active {
-  background-color: #04aa6d;
-  color: white;
+.page-icon a {
+  color:aliceblue
+}
+
+.page-icon:hover {
+  background-color: aquamarine;
+}
+
+.page-icon:hover a {
+  color: #333;
+}
+
+/*
+  Masonry Image Gallery
+*/
+.grid {
+  margin-left: 6px;
+  margin-right: 6px;
+  margin-top: 70px;
+}
+
+.grid:after {
+  clear: both;
+  content: '';
+  display: block;
+}
+
+.grid-sizer, .grid-item {
+  height: 276.4px;
+  margin-bottom: 6px;
+  width: calc(25% - 6px);
+}
+
+/* gutter width = (container width - (num columns * column width)) / num gutters */
+.gutter-sizer {
+  width: calc((100% - (4 * (25% - 6px))) / 3);
+}
+
+.grid-item--height2 {
+  height: 628.63px;
+}
+
+.grid-item img {
+  width: 100%;
+}
+
+@media screen and (max-width: 1199px) {
+  .grid-sizer, .grid-item {
+    width: calc(33.33333% - 6px);
+  }
+
+  .gutter-sizer {
+    width: calc((100% - (3 * (33.33333% - 6px))) / 2);
+  }
+}
+
+@media screen and (max-width: 991px) {
+  .grid-sizer, .grid-item {
+    width: calc(50% - 6px);
+  }
+
+  .gutter-sizer {
+    width: calc((100% - (2 * (50% - 6px))) / 1);
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .grid-sizer, .grid-item {
+    width: 100%;
+  }
+
+  .gutter-sizer {
+    width: 0%;
+  }
+}
+
+/*
+  Loader
+*/
+.loader {
+  display: block;
+  height: 80px;
+  margin: 0 auto;
+  opacity: 0;
+  position: relative;
+  width: 80px;
+}
+
+.loader.show {
+  opacity: 1;
+}
+
+.loader div {
+  animation: loader 0.5s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+  background: #f4f4f4;
+  display: inline-block;
+  left: 8px;
+  position: absolute;
+  width: 16px;
+}
+
+.loader div:nth-child(1) {
+  animation-delay: -0.24s;
+  left: 8px;
+}
+
+.loader div:nth-child(2) {
+  animation-delay: -0.12s;
+  left: 32px;
+}
+
+.loader div:nth-child(3) {
+  animation-delay: 0;
+  left: 56px;
+}
+
+@keyframes loader {
+  0% {
+    height: 64px;
+    top: 8px;
+  }
+
+  50%, 100% {
+    height: 32px;
+    top: 24px;
+  }
 }
 
 /*
   Conditions
 */
-
 .location-input {
-  flex: 1 1 auto;
   text-align: center;
+  flex: 1 1 auto;
   flex-direction: row;
 }
 
 .location-input input {
+  border-radius: 5px;
+  font-family: inherit;
+  margin-bottom: 10px;
+  outline: none;
   width: 70%;
 }
 
 .conditions {
-  height: 90%;
+  bottom: 0;
   display: flex;
   flex-direction: column;
+  height: calc(100% - 70px);
+  position: absolute;
+  width: 100%;
 }
 
 .info {
-  flex: 1 1 auto;
-  text-align: center;
-  margin-bottom: 5px;
   display: none;
+  flex: 1 1 auto;
+  margin-bottom: 5px;
+  text-align: center;
 }
 
 .suntime {
@@ -108,15 +238,15 @@ body::-webkit-scrollbar {
 }
 
 .wi {
-  font-size: 42px;
   display: block;
+  font-size: 42px;
 }
 
 .map-container {
   height: 60%;
-  padding-right: 10px;
-  padding-left: 10px;
   padding-bottom: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .map-frame {
@@ -126,111 +256,4 @@ body::-webkit-scrollbar {
 
 #map {
   height: 100%;
-}
-
-/*
-  Input formatting
-*/
-input, textarea, select {
-  font-family: inherit;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  outline: none;
-}
-
-textarea {
-  height: 400px;
-}
-
-/*
-  Masonry Image Gallery
-*/
-.grid:after {
-  content: '';
-  display: block;
-  clear: both;
-}
-
-.grid-sizer, .grid-item {
-  width: calc(25% - 6px);
-  margin-bottom: 6px;
-  height: 276.4px;
-}
-
-.grid-item--height2 {
-  height: 628.63px;
-}
-
-.grid-item img {
-  width: 100%;
-}
-
-@media screen and (max-width: 1199px) {
-  .grid-sizer, .grid-item {
-    width: calc(33.33333% - 6px);
-  }
-}
-
-@media screen and (max-width: 991px) {
-  .grid-sizer, .grid-item {
-    width: calc(50% - 6px);
-  }
-}
-
-@media screen and (max-width: 767px) {
-  .grid-sizer, .grid-item {
-    width: 100%;
-  }
-}
-
-/* loader */
-
-.loader {
-  display: block;
-  position: relative;
-  width: 80px;
-  height: 80px;
-  opacity: 0;
-  margin: 0 auto;
-}
-
-.loader.show {
-  opacity: 1;
-}
-
-.loader div {
-  display: inline-block;
-  position: absolute;
-  left: 8px;
-  width: 16px;
-  background: #f4f4f4;
-  animation: loader 0.5s cubic-bezier(0, 0.5, 0.5, 1) infinite;
-}
-
-.loader div:nth-child(1) {
-  left: 8px;
-  animation-delay: -0.24s;
-}
-
-.loader div:nth-child(2) {
-  left: 32px;
-  animation-delay: -0.12s;
-}
-
-.loader div:nth-child(3) {
-  left: 56px;
-  animation-delay: 0;
-}
-
-@keyframes loader {
-  0% {
-      top: 8px;
-      height: 64px;
-  }
-
-  50%,
-  100% {
-      top: 24px;
-      height: 32px;
-  }
 }

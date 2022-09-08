@@ -12,10 +12,11 @@ Additional features include a geographical conditions page, making photography t
 
 ## TODO
 **High Priority:**
-- Conditions page, with weather sun, and moon times/phases (maybe include constellation info?)
-- Image tagging, sorting, filtering options (move from masonry to isotope)
+- Move from Masonry to Isotope
+- Image tagging, sorting, filtering options
 - Improve navbar styling
 
 **Low Priority:**
 - Better styling for contact page
 - Add info page? (Based on readme?)
+- Constellation info?

@@ -16,7 +16,7 @@ const database = getDatabase(app);
 const dbRef = ref(database, '/images/');
 
 /*
-Image Gallery Pagination and Infinite Scrolling Variables
+  Image Gallery Pagination and Infinite Scrolling Variables
 */
 const loader = $('.loader');
 const databaseImageCount = (await get(ref(database, "imageCount"))).val();
@@ -24,11 +24,28 @@ let cursor = null;
 let imageQueryLimit = 0;
 let throttleTimer;
 
-let $grid = $('.grid').masonry({
+let $grid = $('.grid').isotope({
   itemSelector: '.grid-item',
-  columnWidth: '.grid-sizer',
-  gutter: 6,
-  percentPosition: true
+  percentPosition: true,
+  masonry: {
+    columnWidth: '.grid-sizer',
+    gutter: '.gutter-sizer',
+  },
+  getSortData: {
+    priority: '[data-priority] parseInt',
+    title: '[data-title]',
+  }
+});
+
+$grid.isotope({ 
+  sortAscending: {
+    priority: false,
+    title: true,
+  },
+});
+
+$grid.isotope({
+  filter: '*',
 });
 
 // Utility Functions
@@ -59,9 +76,13 @@ function addImageTile(image) {
   let tileClass = 'grid-item';
   if (image.meta.height > image.meta.width) {
     tileClass += ' grid-item--height2';
+  } else {
+    tileClass += ' grid-item--width2';
   }
   let tile = $('<div>', {
     'class': tileClass,
+    'data-priority': image.meta.priority,
+    'data-title': image.name,
   });
   let imgWrapper = $('<a>', {
     href: miniURL,
@@ -74,7 +95,7 @@ function addImageTile(image) {
   });
 
   tile.append(imgWrapper.append(img))
-  $grid.append(tile).masonry('appended', tile).masonry();
+  $grid.append(tile).isotope('appended', tile).isotope();
 };
 
 async function getImages() {
@@ -145,7 +166,7 @@ async function loadImages(delay = 600) {
 // Load initial page of images, then begin infinite scrolling
 await loadImages(0);
 window.addEventListener('scroll', async () => {
-  if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight) {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 5) {
     await loadImages();
   }
 }, {
