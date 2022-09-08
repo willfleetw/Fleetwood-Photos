@@ -65,6 +65,10 @@ function showImages(images) {
   images.forEach(image => {
     addImageTile(image);
   });
+  // I don't know why, but we have to add this event func every time, not just at init
+  $grid.imagesLoaded().progress( function() {
+    $grid.isotope('layout');
+  });
 }
 
 function addImageTile(image) {
@@ -75,9 +79,9 @@ function addImageTile(image) {
   
   let tileClass = 'grid-item';
   if (image.meta.height > image.meta.width) {
-    tileClass += ' grid-item--height2';
+    tileClass += ' tall';
   } else {
-    tileClass += ' grid-item--width2';
+    tileClass += ' wide';
   }
   let tile = $('<div>', {
     'class': tileClass,
@@ -94,8 +98,8 @@ function addImageTile(image) {
     'loading': 'lazy',
   });
 
-  tile.append(imgWrapper.append(img))
-  $grid.append(tile).isotope('appended', tile).isotope();
+  tile.append(imgWrapper.append(img));
+  $grid.append(tile).isotope('appended', tile);
 };
 
 async function getImages() {

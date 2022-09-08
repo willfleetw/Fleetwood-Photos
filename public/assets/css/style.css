@@ -91,7 +91,6 @@ body::-webkit-scrollbar {
 }
 
 .grid-sizer, .grid-item {
-  height: 276.4px;
   margin-bottom: 6px;
   width: calc(25% - 6px);
 }
@@ -99,10 +98,6 @@ body::-webkit-scrollbar {
 /* gutter width = (container width - (num columns * column width)) / num gutters */
 .gutter-sizer {
   width: calc((100% - (4 * (25% - 6px))) / 3);
-}
-
-.grid-item--height2 {
-  height: 628.63px;
 }
 
 .grid-item img {
