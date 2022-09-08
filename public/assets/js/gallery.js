@@ -44,9 +44,17 @@ $grid.isotope({
   },
 });
 
-$grid.isotope({
-  filter: '*',
-});
+function filterBy(filter) {
+  $grid.isotope({
+    filter: filter,
+  });
+}
+window.filterBy = filterBy;
+
+function sortBy(ordering) {
+
+}
+window.sortBy = sortBy;
 
 // Utility Functions
 function hideLoader() {

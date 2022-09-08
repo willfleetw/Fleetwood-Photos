@@ -32,11 +32,22 @@
         </a>
       </div>
 
-      <div class="navitem gallery-control" id="filter">
+      <div class="navitem gallery-control dropdown" id="filter">
         <i class="fa-solid fa-filter"></i>
+        <div class="dropdown-content">
+          <div class="dropdown-item" onclick="filterBy('*')">Clear Filter</div>
+          <div class="dropdown-item" onclick="filterBy('.wide')">Orientation: Landscape</div>
+          <div class="dropdown-item" onclick="filterBy('.tall')">Orientation: Portrait</div>
+          <div class="dropdown-item" onclick="filterBy('b&w')">Black & White</div>
+          <div class="dropdown-item" onclick="filterBy('color')">Color</div>
+        </div>
       </div>
-      <div class="navitem gallery-control" id="sort">
+      <div class="navitem gallery-control dropdown" id="sort">
         <i class="fa-solid fa-sort"></i>
+        <div class="dropdown-content">
+          <div class="dropdown-item" onclick="sortBy('default')">Default</div>
+          <div class="dropdown-item" onclick="sortBy('datetaken')">Date Taken</div>
+        </div>
       </div>
     </div>
     
