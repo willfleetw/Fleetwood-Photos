@@ -59,8 +59,17 @@ body::-webkit-scrollbar {
   text-decoration: none;
 }
 
+.navitem.active {
+  background-color: aquamarine;
+}
+
+.navitem.active a {
+  color: #333;
+}
+
 .gallery-control {
   float: right;
+  color: pink;
 }
 
 .page-icon a {
