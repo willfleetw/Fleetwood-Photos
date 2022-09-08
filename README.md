@@ -13,8 +13,6 @@ Additional features include a geographical conditions page, making photography t
 ## TODO
 **High Priority:**
 - Hide images until loaded, fade-in?
-- Better styling for contact page
-- Add favicon.ico
 
 **Low Priority:**
 - Add info page? (Based on readme?)

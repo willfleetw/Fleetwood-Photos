@@ -290,3 +290,21 @@ body::-webkit-scrollbar {
 #map {
   height: 100%;
 }
+
+/*
+  Contact Page
+*/
+.contact-form {
+  margin-top: 70px;
+  text-align: center;
+  width: 100%;
+}
+
+.contact-form input, .contact-form textarea {
+  border-radius: 5px;
+  font-family: inherit;
+  justify-self: left;
+  margin-bottom: 10px;
+  outline: none;
+  width: 75%;
+}
