@@ -12,11 +12,11 @@ Additional features include a geographical conditions page, making photography t
 
 ## TODO
 **High Priority:**
-- Move from Masonry to Isotope
-- Image tagging, sorting, filtering options
 - Improve navbar styling
+- Image tagging, sorting, filtering options
 
 **Low Priority:**
 - Better styling for contact page
 - Add info page? (Based on readme?)
 - Constellation info?
+- Add favicon.ico
