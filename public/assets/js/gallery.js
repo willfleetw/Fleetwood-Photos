@@ -34,25 +34,30 @@ let $grid = $('.grid').isotope({
   getSortData: {
     priority: '[data-priority] parseInt',
     title: '[data-title]',
-  }
-});
-
-$grid.isotope({ 
+    datetaken: '[data-datetaken]',
+  },
   sortAscending: {
     priority: false,
     title: true,
+    datetaken: true,
   },
 });
 
-function filterBy(filter) {
+function filterBy(element, filter) {
+  $('.dropdown-item.filter').removeClass('active');
+  element.addClass('active');
   $grid.isotope({
     filter: filter,
   });
 }
 window.filterBy = filterBy;
 
-function sortBy(ordering) {
-
+function sortBy(element, sort) {
+  $('.dropdown-item.sort').removeClass('active');
+  element.addClass('active');
+  $grid.isotope({
+    sortBy: sort,
+  });
 }
 window.sortBy = sortBy;
 
@@ -91,10 +96,12 @@ function addImageTile(image) {
   } else {
     tileClass += ' wide';
   }
+  tileClass += " " + image.meta.tags.join(" ");
   let tile = $('<div>', {
     'class': tileClass,
     'data-priority': image.meta.priority,
     'data-title': image.name,
+    'data-datetaken': image.meta.dateTaken,
   });
   let imgWrapper = $('<a>', {
     href: miniURL,

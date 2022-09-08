@@ -35,18 +35,22 @@
       <div class="navitem gallery-control dropdown" id="filter">
         <i class="fa-solid fa-filter"></i>
         <div class="dropdown-content">
-          <div class="dropdown-item" onclick="filterBy('*')">Clear Filter</div>
-          <div class="dropdown-item" onclick="filterBy('.wide')">Orientation: Landscape</div>
-          <div class="dropdown-item" onclick="filterBy('.tall')">Orientation: Portrait</div>
-          <div class="dropdown-item" onclick="filterBy('b&w')">Black & White</div>
-          <div class="dropdown-item" onclick="filterBy('color')">Color</div>
+          <div class="dropdown-item filter active" onclick="filterBy($(this), '*')">Clear Filter</div>
+          <div class="dropdown-item filter" onclick="filterBy($(this), '.wide')">Orientation: Landscape</div>
+          <div class="dropdown-item filter" onclick="filterBy($(this), '.tall')">Orientation: Portrait</div>
+          <div class="dropdown-item filter" onclick="filterBy($(this), '.blackandwhite')">Black & White</div>
+          <div class="dropdown-item filter" onclick="filterBy($(this), '.colored')">Color</div>
+          <div class="dropdown-item filter" onclick="filterBy($(this), '.nature')">Nature</div>
+          <div class="dropdown-item filter" onclick="filterBy($(this), '.urban')">Urban</div>
+          <div class="dropdown-item filter" onclick="filterBy($(this), '.sports')">Sports</div>
         </div>
       </div>
       <div class="navitem gallery-control dropdown" id="sort">
         <i class="fa-solid fa-sort"></i>
         <div class="dropdown-content">
-          <div class="dropdown-item" onclick="sortBy('default')">Default</div>
-          <div class="dropdown-item" onclick="sortBy('datetaken')">Date Taken</div>
+          <div class="dropdown-item sort active" onclick="sortBy($(this), 'original-order')">Default</div>
+          <div class="dropdown-item sort" onclick="sortBy($(this), 'datetaken')">Date Taken</div>
+          <div class="dropdown-item sort" onclick="sortBy($(this), 'random')">Shuffle</div>
         </div>
       </div>
     </div>

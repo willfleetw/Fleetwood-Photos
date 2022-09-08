@@ -70,14 +70,16 @@ body::-webkit-scrollbar {
   float: right;
   color: pink;
 }
+
 .dropdown {
   position: relative;
 }
+
 .dropdown-content {
   display: none;
   position: absolute;
   top: 53px;
-  right: 0;
+  right: 5px;
   font-size: medium;
   background-color: #333;
   text-decoration: none;
@@ -88,6 +90,10 @@ body::-webkit-scrollbar {
   outline: auto;
   white-space: nowrap;
   padding: 5px 5px;
+}
+
+.dropdown-item.active, .dropdown-item:hover {
+  background-color: salmon;
 }
 
 .dropdown:hover .dropdown-content {
