@@ -172,6 +172,25 @@ async function updateLocation(latitude, longitude) {
 async function geolocate() {
   let address = $('#geolocation').val().trim();
   if (address.length == 0) {
+    // Try to get user's current location
+    // Default Bellingham, WA USA lat/lon
+    var lat = 48.769768, lon = -122.485886;
+    
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        // Success
+        (position) => {
+          updateLocation(position.coords.latitude, position.coords.longitude);
+        },
+        // Failure
+        (_) => {
+          updateLocation(lat, lon);
+        }
+      );
+    } else {
+      updateLocation(lat, lon);
+    }
+
     return;
   }
 
@@ -207,4 +226,4 @@ function onMapClick(e) {
 }
 
 getMoonPhase();
-updateLocation(48.769768, -122.485886);
+geolocate();
