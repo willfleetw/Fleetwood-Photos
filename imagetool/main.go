@@ -14,9 +14,10 @@ import (
 	"sync"
 
 	"cloud.google.com/go/storage"
-	firebase "firebase.google.com/go"
-	"firebase.google.com/go/db"
+	firebase "firebase.google.com/go/v4"
+	"firebase.google.com/go/v4/db"
 	"github.com/buckket/go-blurhash"
+	"github.com/manifoldco/promptui"
 )
 
 func initFirebase() (*db.Client, *storage.BucketHandle) {
@@ -46,7 +47,11 @@ func initFirebase() (*db.Client, *storage.BucketHandle) {
 
 var largeFolderPath, smallFolderPath, miniFolderPath string
 
-func uploadFile(fileInfo fs.FileInfo, dbClient *db.Client, bucket *storage.BucketHandle, wg *sync.WaitGroup) {
+var mu sync.Mutex
+var maxPriority int
+
+// Check if file already exists in DB
+func checkFileExistance(fileInfo fs.FileInfo, dbClient *db.Client, bucket *storage.BucketHandle, wg *sync.WaitGroup, ch chan string) {
 	defer wg.Done()
 
 	// Check if fileInfo is a jpeg file, and that it exists in all three folders
@@ -56,42 +61,160 @@ func uploadFile(fileInfo fs.FileInfo, dbClient *db.Client, bucket *storage.Bucke
 
 	largeFilePath := filepath.Join(largeFolderPath, fileInfo.Name())
 	if _, err := os.Stat(largeFilePath); os.IsNotExist(err) {
-		fmt.Printf("large file %v does exist: %v\n", largeFilePath, err)
+		fmt.Printf("large file %v does not exist: %v\n", largeFilePath, err)
 		return
 	}
 	smallFilePath := filepath.Join(smallFolderPath, fileInfo.Name())
 	if _, err := os.Stat(smallFilePath); os.IsNotExist(err) {
-		fmt.Printf("small file %v does exist: %v\n", smallFilePath, err)
+		fmt.Printf("small file %v does not exist: %v\n", smallFilePath, err)
 		return
 	}
 	miniFilePath := filepath.Join(miniFolderPath, fileInfo.Name())
+	if _, err := os.Stat(miniFilePath); os.IsNotExist(err) {
+		fmt.Printf("mini file %v does not exist: %v\n", miniFilePath, err)
+		return
+	}
+
+	// Check if image exists in DB
+	imageTitle := fileInfo.Name()[:len(fileInfo.Name())-4] // remove .jpg from name
+	ref := dbClient.NewRef("images/" + imageTitle)
+	imageData := make(map[string]interface{}, 0)
+	err := ref.Get(context.Background(), &imageData)
+	if err != nil {
+		fmt.Printf("failed to read db for %v: %v\n", imageTitle, err)
+		return
+	}
+
+	// image does not exist in DB, so we upload
+	if len(imageData) == 0 {
+		ch <- imageTitle
+	} else { // image does exist, so take oportunity to read priority
+		mu.Lock()
+		imagePriority := int(imageData["priority"].(float64))
+		if imagePriority > maxPriority {
+			maxPriority = imagePriority
+		}
+		mu.Unlock()
+	}
+}
+
+// given a folder, containing "large/small/mini" subdirs, for each file that is in all three
+// 1. Check if it is already loadd into DB. If so, skip
+// 2. Calculate needed information from mini file, seek back to front of file
+// 3. Load all three files to storage and calculated info to DB
+func uploadFiles(folderPath string, dbClient *db.Client, bucket *storage.BucketHandle) error {
+	largeFolderPath = filepath.Join(folderPath, "large")
+	if _, err := os.Stat(largeFolderPath); os.IsNotExist(err) {
+		log.Fatalf("directory %v does exist: %v", largeFolderPath, err)
+	}
+	smallFolderPath = filepath.Join(folderPath, "small")
+	if _, err := os.Stat(smallFolderPath); os.IsNotExist(err) {
+		log.Fatalf("directory %v does exist: %v", smallFolderPath, err)
+	}
+	miniFolderPath = filepath.Join(folderPath, "mini")
+	if _, err := os.Stat(miniFolderPath); os.IsNotExist(err) {
+		log.Fatalf("directory %v does exist: %v", miniFolderPath, err)
+	}
+
+	files, err := ioutil.ReadDir(miniFolderPath)
+	if err != nil {
+		log.Fatalf("failed to list files in  %v: %v\n", miniFolderPath, err)
+	}
+
+	var wg sync.WaitGroup
+	ch := make(chan string, len(files))
+	for _, fi := range files {
+		wg.Add(1)
+		go checkFileExistance(fi, dbClient, bucket, &wg, ch)
+	}
+	wg.Wait()
+	close(ch)
+	maxPriority++
+
+	// ch now only contains images that are not in DB
+	// Now we must ask the user which tags to apply to each image
+	filesToAdd := make(map[string][]string, 0)
+	for fileName := range ch {
+		switch fileName {
+		case "":
+			continue
+		default:
+			// Prompt user somehow, and get tags
+			var tags []string
+			fmt.Printf("Please input tags for %v:\n", fileName)
+			for {
+				prompt := promptui.Prompt{
+					Label: fmt.Sprintf("Tag [%v]: ", len(tags)),
+				}
+				result, err := prompt.Run()
+				if err != nil {
+					return err
+				}
+				if result == "" {
+					break
+				} else {
+					tags = append(tags, result)
+				}
+			}
+			filesToAdd[fileName] = tags
+		}
+	}
+
+	for fileName, tags := range filesToAdd {
+		wg.Add(1)
+		go uploadFile(fileName, tags, maxPriority, dbClient, bucket, &wg)
+	}
+	wg.Wait()
+
+	return nil
+}
+
+// Given a fileName, upload large/small/mini files to storage, parse and upload info to DB
+func uploadFile(fileName string, tags []string, priority int, dbClient *db.Client, bucket *storage.BucketHandle, wg *sync.WaitGroup) {
+	defer wg.Done()
 
 	// Check if file exists in storage, if so skip
-	miniStorageObject := bucket.Object("images/mini/" + fileInfo.Name())
+	miniStorageObject := bucket.Object("images/mini/" + fileName + ".jpg")
 	_, err := miniStorageObject.Attrs(context.Background())
 	if err != nil && err != storage.ErrObjectNotExist {
-		fmt.Printf("error looking up mini file %v in bucket: %v\n", fileInfo.Name(), err)
+		fmt.Printf("error looking up mini file %v in bucket: %v\n", fileName, err)
 		return
 	} else if err == nil {
-		fmt.Printf("mini file %v already exists in bucket\n", fileInfo.Name())
+		fmt.Printf("mini file %v already exists in bucket\n", fileName)
 		return
 	}
-	smallStorageObject := bucket.Object("images/small/" + fileInfo.Name())
+	smallStorageObject := bucket.Object("images/small/" + fileName + ".jpg")
 	_, err = smallStorageObject.Attrs(context.Background())
 	if err != nil && err != storage.ErrObjectNotExist {
-		fmt.Printf("error looking up small file %v in bucket: %v\n", fileInfo.Name(), err)
+		fmt.Printf("error looking up small file %v in bucket: %v\n", fileName, err)
 		return
 	} else if err == nil {
-		fmt.Printf("small file %v already exists in bucket\n", fileInfo.Name())
+		fmt.Printf("small file %v already exists in bucket\n", fileName)
 		return
 	}
-	largeStorageObject := bucket.Object("images/large/" + fileInfo.Name())
+	largeStorageObject := bucket.Object("images/large/" + fileName + ".jpg")
 	_, err = largeStorageObject.Attrs(context.Background())
 	if err != nil && err != storage.ErrObjectNotExist {
-		fmt.Printf("error looking up large file %v in bucket: %v\n", fileInfo.Name(), err)
+		fmt.Printf("error looking up large file %v in bucket: %v\n", fileName, err)
 		return
 	} else if err == nil {
-		fmt.Printf("largefile %v already exists in bucket\n", fileInfo.Name())
+		fmt.Printf("largefile %v already exists in bucket\n", fileName)
+		return
+	}
+
+	largeFilePath := filepath.Join(largeFolderPath, fileName+".jpg")
+	if _, err := os.Stat(largeFilePath); os.IsNotExist(err) {
+		fmt.Printf("large file %v does not exist: %v\n", largeFilePath, err)
+		return
+	}
+	smallFilePath := filepath.Join(smallFolderPath, fileName+".jpg")
+	if _, err := os.Stat(smallFilePath); os.IsNotExist(err) {
+		fmt.Printf("small file %v does not exist: %v\n", smallFilePath, err)
+		return
+	}
+	miniFilePath := filepath.Join(miniFolderPath, fileName+".jpg")
+	if _, err := os.Stat(miniFilePath); os.IsNotExist(err) {
+		fmt.Printf("mini file %v does not exist: %v\n", miniFilePath, err)
 		return
 	}
 
@@ -126,6 +249,11 @@ func uploadFile(fileInfo fs.FileInfo, dbClient *db.Client, bucket *storage.Bucke
 		return
 	}
 	defer miniImageFile.Close()
+	miniFileStat, err := os.Stat(miniFilePath)
+	if err != nil {
+		fmt.Printf("error getting mini image %v stat: %v\n", miniFilePath, err)
+		return
+	}
 
 	im, err := jpeg.DecodeConfig(miniImageFile)
 	if err != nil {
@@ -167,7 +295,7 @@ func uploadFile(fileInfo fs.FileInfo, dbClient *db.Client, bucket *storage.Bucke
 	miniFileWriter := miniStorageObject.NewWriter(context.Background())
 	miniFileWriter.ContentType = "image/jpeg"
 	// recommened to set chunksize to slightly larger than filesize to avoid memory bloat
-	miniFileWriter.ChunkSize = int(fileInfo.Size()) + 1024
+	miniFileWriter.ChunkSize = int(miniFileStat.Size()) + 1024
 	_, err = io.Copy(miniFileWriter, miniImageFile)
 	if err != nil {
 		fmt.Printf("failed copying file %v to storage writer: %v\n", miniFilePath, err)
@@ -211,64 +339,38 @@ func uploadFile(fileInfo fs.FileInfo, dbClient *db.Client, bucket *storage.Bucke
 		return
 	}
 
-	imageTitle := fileInfo.Name()[:len(fileInfo.Name())-4]
-	fileDBRef := dbClient.NewRef("images/" + imageTitle)
+	fileDBRef := dbClient.NewRef("images/" + fileName)
 	imageMetaData := make(map[string]interface{}, 0)
 	imageMetaData["blurHash"] = blurHash
-	imageMetaData["imageSize"] = fileInfo.Size()
+	imageMetaData["imageSize"] = miniFileStat.Size()
 	imageMetaData["width"] = width
 	imageMetaData["height"] = height
+	imageMetaData["priority"] = priority
+	imageMetaData["tags"] = tags
 	err = fileDBRef.Set(context.Background(), imageMetaData)
 	if err != nil {
-		fmt.Printf("database set error for %v: %v\n", imageTitle, err)
+		fmt.Printf("database set error for %v: %v\n", fileName, err)
 		return
 	}
+
+	fmt.Printf("uploaded %v\n", fileName)
 }
 
 func main() {
 	dbClient, bucket := initFirebase()
-	// given a folder, containing "large/small/mini" subdirs, for each file that is in all three
-	// 1. Check if it is already loaded into storage/DB. If so, skip
-	// 2. Calculate needed information from mini file, seek back to front of file
-	// 3. Load all three files to storage and calculated info to DB
-
 	folderPath := filepath.Clean(os.Args[1])
-	largeFolderPath = filepath.Join(folderPath, "large")
-	if _, err := os.Stat(largeFolderPath); os.IsNotExist(err) {
-		log.Fatalf("directory %v does exist: %v", largeFolderPath, err)
-	}
-	smallFolderPath = filepath.Join(folderPath, "small")
-	if _, err := os.Stat(smallFolderPath); os.IsNotExist(err) {
-		log.Fatalf("directory %v does exist: %v", smallFolderPath, err)
-	}
-	miniFolderPath = filepath.Join(folderPath, "mini")
-	if _, err := os.Stat(miniFolderPath); os.IsNotExist(err) {
-		log.Fatalf("directory %v does exist: %v", miniFolderPath, err)
-	}
-
-	// we need to list over each file in mini, and check for existence in other folders
-	files, err := ioutil.ReadDir(miniFolderPath)
-	if err != nil {
-		log.Fatalf("failed to read %v: %v\n", miniFolderPath, err)
-	}
-
-	var wg sync.WaitGroup
-	for _, fi := range files {
-		wg.Add(1)
-		go uploadFile(fi, dbClient, bucket, &wg)
-	}
-	wg.Wait()
+	uploadFiles(folderPath, dbClient, bucket)
 
 	// Now we need to update total image count
 	imagesRef := dbClient.NewRef("images")
 	imageNames := make(map[string]interface{}, 0)
-	err = imagesRef.GetShallow(context.Background(), &imageNames)
+	err := imagesRef.GetShallow(context.Background(), &imageNames)
 	if err != nil {
 		log.Fatalf("failed to get total image count: %v\n", err)
 	}
 	imageCountRef := dbClient.NewRef("imageCount")
 	err = imageCountRef.Set(context.Background(), len(imageNames))
 	if err != nil {
-		log.Fatalf("failed to set new image count %v: %v", len(imageNames), err)
+		log.Fatalf("failed to set new image count to %v: %v", len(imageNames), err)
 	}
 }
