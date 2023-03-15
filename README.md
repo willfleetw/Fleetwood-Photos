@@ -13,6 +13,9 @@ Additional features include a geographical conditions page, making photography t
 ## TODO
 **High Priority:**
 - Hide images until loaded, fade-in?
+- update tool, make it more reliable, user friendly, and automatically create the small and mini files
+- add future weather predictions for conditions page
+- conditions page can make better use of larger screens, have map on right, controls on left
 
 **Low Priority:**
 - Add info page? (Based on readme?)

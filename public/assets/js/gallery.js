@@ -52,15 +52,6 @@ function filterBy(element, filter) {
 }
 window.filterBy = filterBy;
 
-function sortBy(element, sort) {
-  $('.dropdown-item.sort').removeClass('active');
-  element.addClass('active');
-  $grid.isotope({
-    sortBy: sort,
-  });
-}
-window.sortBy = sortBy;
-
 // Utility Functions
 function hideLoader() {
   loader.removeClass('show');
@@ -84,12 +75,34 @@ function showImages(images) {
   });
 }
 
+const uniqueTags = new Set();
+function addToDropdownFilter(tags) {
+  let dropdown = $('.dropdown-content')
+  tags.forEach(tag => {
+    if (!uniqueTags.has(tag)) {
+      uniqueTags.add(tag);
+
+      let filter = $('<div>', {
+        'class': 'dropdown-item filter',
+      });
+      filter.on("click", function() {
+        filterBy($(this), '.' + tag);
+      });
+      filter.text(tag.toLocaleUpperCase());
+
+      dropdown.append(filter);
+    }
+  });
+}
+
 function addImageTile(image) {
   let miniURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fmini%2F' + image.name + '.jpg?alt=media'
   let smallURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fsmall%2F' + image.name + '.jpg?alt=media'
   let largeURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Flarge%2F' + image.name + '.jpg?alt=media'
   let captionSuffix = " - <a download target='_blank' href='" + smallURL + "'>Small File</a> and <a download target='_blank' href='"+ largeURL + "'>Large File</a>"
   
+  addToDropdownFilter(image.meta.tags);
+
   let tileClass = 'grid-item';
   if (image.meta.height > image.meta.width) {
     tileClass += ' tall';

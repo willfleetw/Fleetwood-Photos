@@ -50,6 +50,7 @@ body::-webkit-scrollbar {
 }
 
 .navitem {
+  color: pink;
   display: block;
   float: left;
   font-size: 32px;
@@ -102,7 +103,7 @@ body::-webkit-scrollbar {
 }
 
 .page-icon a {
-  color:aliceblue
+  color: pink
 }
 
 .page-icon:hover {
@@ -169,6 +170,10 @@ body::-webkit-scrollbar {
 
   .gutter-sizer {
     width: 0%;
+  }
+
+  .navitem.title {
+    display: none;
   }
 }
 
