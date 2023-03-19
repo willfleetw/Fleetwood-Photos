@@ -104,11 +104,6 @@ function addImageTile(image) {
   addToDropdownFilter(image.meta.tags);
 
   let tileClass = 'grid-item';
-  if (image.meta.height > image.meta.width) {
-    tileClass += ' tall';
-  } else {
-    tileClass += ' wide';
-  }
   tileClass += " " + image.meta.tags.join(" ");
   let tile = $('<div>', {
     'class': tileClass,

@@ -16,7 +16,6 @@ import (
 	"cloud.google.com/go/storage"
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/db"
-	"github.com/buckket/go-blurhash"
 	"github.com/manifoldco/promptui"
 )
 
@@ -271,17 +270,6 @@ func uploadFile(fileName string, tags []string, priority int, dbClient *db.Clien
 		return
 	}
 
-	loadedImage, err := jpeg.Decode(miniImageFile)
-	if err != nil {
-		fmt.Printf("decoding error for %v: %v\n", miniFilePath, err)
-		return
-	}
-	blurHash, err := blurhash.Encode(4, 3, loadedImage) // 4x3 recomended by blurhash
-	if err != nil {
-		fmt.Printf("blurhash encoding error for %v: %v\n", miniFilePath, err)
-		return
-	}
-
 	ret, err = miniImageFile.Seek(0, 0)
 	if err != nil {
 		fmt.Printf("seek error: %v\n", err)
@@ -339,12 +327,14 @@ func uploadFile(fileName string, tags []string, priority int, dbClient *db.Clien
 		return
 	}
 
+	orientation := "wide"
+	if height > width {
+		orientation = "tall"
+	}
+	tags = append(tags, orientation)
 	fileDBRef := dbClient.NewRef("images/" + fileName)
 	imageMetaData := make(map[string]interface{}, 0)
-	imageMetaData["blurHash"] = blurHash
 	imageMetaData["imageSize"] = miniFileStat.Size()
-	imageMetaData["width"] = width
-	imageMetaData["height"] = height
 	imageMetaData["priority"] = priority
 	imageMetaData["tags"] = tags
 	err = fileDBRef.Set(context.Background(), imageMetaData)

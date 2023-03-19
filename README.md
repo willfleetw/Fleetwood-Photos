@@ -18,5 +18,7 @@ Additional features include a geographical conditions page, making photography t
 - conditions page can make better use of larger screens, have map on right, controls on left
 
 **Low Priority:**
+- fix bug where duplicate images get loaded
 - Add info page? (Based on readme?)
 - Constellation info?
+- make navbar hide when scrolling down, appear when scrolling up
