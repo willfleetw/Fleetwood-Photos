@@ -8,34 +8,18 @@ import (
 	"fp/imagedb"
 
 	"cloud.google.com/go/storage"
-	firebase "firebase.google.com/go"
 	"firebase.google.com/go/db"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/exp/slices"
 )
 
 func Action(cCtx *cli.Context) error {
-	fbApp, err := firebase.NewApp(context.Background(), nil)
-	if err != nil {
-		log.Fatalf("error initializing app: %v", err)
-	}
+	return Validate(imagedb.InitFirebase())
+}
 
-	dbClient, err := fbApp.DatabaseWithURL(context.Background(), "https://fleetwood-photos-default-rtdb.firebaseio.com/")
-	if err != nil {
-		log.Fatalf("error getting database client: %v", err)
-	}
-
-	storageClient, err := fbApp.Storage(context.Background())
-	if err != nil {
-		log.Fatalf("error getting storage client: %v", err)
-	}
-	bucketHandle, err := storageClient.Bucket("fleetwood-photos.appspot.com")
-	if err != nil {
-		log.Fatalf("error getting storage bucket handle: %v", err)
-	}
-
+func Validate(dbc *db.Client, bh *storage.BucketHandle) error {
 	log.Print("validating database")
-	err = validate(dbClient, bucketHandle)
+	err := validate(dbc, bh)
 	if err != nil {
 		log.Print("database: INVALID")
 	} else {

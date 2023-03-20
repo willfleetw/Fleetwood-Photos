@@ -60,5 +60,12 @@ func delete(dbc *db.Client, bh *storage.BucketHandle, imageName string) error {
 		}
 	}
 
-	return nil
+	imageCountRef := dbc.NewRef("imageCount")
+	imageCount := 0
+	err = imageCountRef.Get(context.Background(), &imageCount)
+	if err != nil {
+		return err
+	}
+	err = imageCountRef.Set(context.Background(), imageCount-1)
+	return err
 }
