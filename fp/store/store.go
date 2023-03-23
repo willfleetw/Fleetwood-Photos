@@ -43,7 +43,7 @@ var Command = &cli.Command{
 	Action: Action,
 }
 
-var file_type_suffixes = []string{".RAF", ".JPEG", ".RAW", ".PNG"}
+var file_type_suffixes = []string{".RAF", ".JPEG", ".JPG", ".RAW", ".PNG"}
 
 func Action(cCtx *cli.Context) error {
 	source_dir := cCtx.String("source_dir")
@@ -61,7 +61,7 @@ func Action(cCtx *cli.Context) error {
 			continue
 		}
 		for _, type_suffix := range file_type_suffixes {
-			if strings.HasSuffix(dirEntry.Name(), type_suffix) {
+			if strings.HasSuffix(dirEntry.Name(), strings.ToUpper(type_suffix)) || strings.HasSuffix(dirEntry.Name(), strings.ToLower(type_suffix)) {
 				images = append(images, dirEntry.Name())
 			}
 		}
@@ -79,26 +79,26 @@ func Action(cCtx *cli.Context) error {
 			return fmt.Errorf("failed to ensure %s exists before copying: %w", dateTimeDirPath, err)
 		}
 
-		log.Printf("\tCOPYING: %s", image)
+		destination_imagePath := path.Join(dateTimeDirPath, image)
+		log.Printf("COPYING: %s -> %s", imagePath, destination_imagePath)
 		input, err := os.ReadFile(imagePath)
 		if err != nil {
 			return fmt.Errorf("failed to read %s for copying: %w", image, err)
 		}
 
-		destination_imagePath := path.Join(dateTimeDirPath, image)
 		err = os.WriteFile(destination_imagePath, input, 0644)
 		if err != nil {
 			return fmt.Errorf("failed to copy %s to %s: %w", image, destination_imagePath, err)
 		}
-		log.Printf("\tCOPIED: %s", image)
+		log.Printf("COPIED: %s -> %s", imagePath, destination_imagePath)
 
 		if delete_originals {
-			log.Printf("\tDELETING: %s", image)
+			log.Printf("DELETING: %s", imagePath)
 			err = os.Remove(imagePath)
 			if err != nil {
 				return fmt.Errorf("failed to delete original %s: %w", image, err)
 			}
-			log.Printf("\tDELETED: %s", image)
+			log.Printf("DELETED: %s", imagePath)
 		}
 	}
 

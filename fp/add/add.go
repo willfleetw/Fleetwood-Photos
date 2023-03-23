@@ -70,13 +70,13 @@ func Action(cCtx *cli.Context) error {
 		return err
 	}
 
-	log.Printf("%v: UPLOADING", imageName)
+	log.Printf("UPLOADING: %v", imageName)
 	err = Upload(dbc, bh, imageName, publishPath, tags, imageCount)
 	if err != nil {
-		log.Printf("%v: NOT UPLOADED", imageName)
+		log.Printf("NOT UPLOADED: %v", imageName)
 	} else {
 		imageCountRef.Set(context.Background(), imageCount+1)
-		log.Printf("%v: UPLOADED", imageName)
+		log.Printf("UPLOADED: %v", imageName)
 	}
 
 	return err

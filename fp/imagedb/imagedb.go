@@ -28,7 +28,7 @@ func InitFirebase() (*db.Client, *storage.BucketHandle) {
 
 	fbApp, err := firebase.NewApp(context.Background(), nil)
 	if err != nil {
-		log.Fatalf("error initializing app: %v", err)
+		log.Fatalf("error initializing firebase: %v", err)
 	}
 
 	dbClient, err := fbApp.DatabaseWithURL(context.Background(), "https://fleetwood-photos-default-rtdb.firebaseio.com/")

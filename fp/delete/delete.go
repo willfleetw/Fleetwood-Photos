@@ -49,12 +49,12 @@ func Action(cCtx *cli.Context) error {
 		log.Fatalf("error getting storage bucket handle: %v", err)
 	}
 
-	log.Printf("deleting: %v", imageName)
+	log.Printf("DELETING: %v", imageName)
 	err = delete(dbClient, bucketHandle, imageName)
 	if err != nil {
-		log.Printf("%v: NOT DELETED", imageName)
+		log.Printf("NOT DELETED: %v", imageName)
 	} else {
-		log.Printf("%v: DELETED", imageName)
+		log.Printf("DELETED: %v", imageName)
 	}
 
 	return err

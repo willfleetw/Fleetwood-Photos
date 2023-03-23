@@ -24,12 +24,12 @@ func Action(cCtx *cli.Context) error {
 }
 
 func Validate(dbc *db.Client, bh *storage.BucketHandle) error {
-	log.Print("validating database")
+	log.Print("VALIDATING DATABASE")
 	err := validate(dbc, bh)
 	if err != nil {
-		log.Print("database: INVALID")
+		log.Print("DATABASE: INVALID")
 	} else {
-		log.Print("database: VALID")
+		log.Print("DATABASE: VALID")
 	}
 
 	return err
@@ -58,7 +58,7 @@ func validate(dbc *db.Client, bh *storage.BucketHandle) error {
 		if err = validateImage(bh, name, entry); err != nil {
 			return err
 		}
-		log.Printf("\t%v = VALID", name)
+		log.Printf("%v = VALID", name)
 	}
 
 	return nil
