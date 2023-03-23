@@ -11,6 +11,22 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+var Command = &cli.Command{
+	Name:  "delete",
+	Usage: "Delete a photo from the site",
+
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:     "image",
+			Aliases:  []string{"i"},
+			Usage:    "Delete `IMAGE_NAME` from site",
+			Required: true,
+		},
+	},
+
+	Action: Action,
+}
+
 func Action(cCtx *cli.Context) error {
 	imageName := cCtx.String("image")
 

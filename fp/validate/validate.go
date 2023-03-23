@@ -13,6 +13,12 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+var Command = &cli.Command{
+	Name:   "validate",
+	Usage:  "Check that the entries in the db are well structured and pointing to valid blob storage locations",
+	Action: Action,
+}
+
 func Action(cCtx *cli.Context) error {
 	return Validate(imagedb.InitFirebase())
 }

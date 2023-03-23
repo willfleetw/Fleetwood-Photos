@@ -3,6 +3,7 @@ package imagedb
 import (
 	"context"
 	"log"
+	"os"
 
 	"cloud.google.com/go/storage"
 	firebase "firebase.google.com/go"
@@ -21,6 +22,10 @@ var (
 )
 
 func InitFirebase() (*db.Client, *storage.BucketHandle) {
+	if _, envSet := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS"); !envSet {
+		log.Fatal("error: must be set GOOGLE_APPLICATION_CREDENTIALS before running")
+	}
+
 	fbApp, err := firebase.NewApp(context.Background(), nil)
 	if err != nil {
 		log.Fatalf("error initializing app: %v", err)

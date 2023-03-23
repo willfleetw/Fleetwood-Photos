@@ -2,6 +2,6 @@
 
 Uses:
 validate database and blob storage
-edit values in database
-upload images, including tags
+upload images
 query database
+delete images

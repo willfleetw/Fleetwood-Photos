@@ -14,6 +14,37 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+var Command = &cli.Command{
+	Name:  "add",
+	Usage: "Add a photo to the site",
+
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:     "image",
+			Aliases:  []string{"i"},
+			Usage:    "Add `IMAGE_NAME` to site",
+			Required: true,
+		},
+
+		&cli.StringSliceFlag{
+			Name:     "tags",
+			Aliases:  []string{"t"},
+			Usage:    "Tags image with `TAGS` for later filtering",
+			Required: true,
+		},
+
+		&cli.StringFlag{
+			Name:     "publish_path",
+			Aliases:  []string{"p"},
+			EnvVars:  []string{"FP_PUBLISH_PATH"},
+			Usage:    "Look for image inside directory `PUBLISH_PATH`",
+			Required: true,
+		},
+	},
+
+	Action: Action,
+}
+
 func Action(cCtx *cli.Context) error {
 	imageName := cCtx.String("image")
 	publishPath := cCtx.String("publish_path")

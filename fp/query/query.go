@@ -10,6 +10,22 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+var Command = &cli.Command{
+	Name:  "query",
+	Usage: "Query for a specific image in the db",
+
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:     "image",
+			Aliases:  []string{"i"},
+			Usage:    "Query for `IMAGE_NAME` from db",
+			Required: true,
+		},
+	},
+
+	Action: Action,
+}
+
 func Action(cCtx *cli.Context) error {
 	imageName := cCtx.String("image")
 
