@@ -13,7 +13,7 @@ import (
 
 var Command = &cli.Command{
 	Name:  "store",
-	Usage: "Copy photos from `SOURCE_DIR`, and place them in `DESTINATION_DIR`/<DATE-TAKEN>",
+	Usage: "Copy photos from a source directory to a new directory based on EXIF DateTime",
 
 	Flags: []cli.Flag{
 		&cli.StringFlag{
