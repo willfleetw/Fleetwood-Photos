@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"fp/add"
+	"fp/clean"
 	"fp/delete"
-	"fp/query"
 	"fp/store"
 	"fp/validate"
 
@@ -20,9 +20,9 @@ var app = &cli.App{
 
 	Commands: []*cli.Command{
 		add.Command,
+		clean.Command,
 		delete.Command,
 		store.Command,
-		query.Command,
 		validate.Command,
 	},
 }
