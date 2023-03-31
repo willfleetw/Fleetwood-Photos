@@ -97,10 +97,6 @@ function addToDropdownFilter(tags) {
 
 function addImageTile(image) {
   let miniURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fmini%2F' + image.name + '.jpg?alt=media'
-  let smallURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fsmall%2F' + image.name + '.jpg?alt=media'
-  let largeURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Flarge%2F' + image.name + '.jpg?alt=media'
-  let captionSuffix = " - <a download target='_blank' href='" + smallURL + "'>Small File</a> and <a download target='_blank' href='"+ largeURL + "'>Large File</a>"
-  
   addToDropdownFilter(image.meta.tags);
 
   let tileClass = 'grid-item';
@@ -114,7 +110,7 @@ function addImageTile(image) {
   let imgWrapper = $('<a>', {
     href: miniURL,
     'data-lightbox': 'gallery',
-    'data-title': image.name.replaceAll('_', ' ') + captionSuffix,
+    'data-title': image.name.replaceAll('_', ' '),
   });
   let img = $('<img>', {
     src: miniURL,
