@@ -6,7 +6,7 @@ The static website is hosted in Google's Firebase, using the hosting, realtime d
 
 ## Purpose
 
-The general purpose of Fleetwood Photos is to host my finished photographs, mostly taken on a Canon AT-1 and occasionaly a Fujifilm XT-3.
+The general purpose of Fleetwood Photos is to host my finished photographs, mostly taken on Fujifilm X-Trans V sensor, and occasionally a Canon AT-1.
 
 Additional features include a geographical conditions page, making photography trips a little easier to plan with weather, sun rise times, golden hour times, and moon phases.
 
