@@ -4,6 +4,7 @@
 @import url("weather-icons.min.css");
 
 html, body {
+  background-color: #B6BFB0;
   display: block;
   margin: 0;
   padding: 0;
@@ -23,26 +24,10 @@ body::-webkit-scrollbar {
 }
 
 /*
-  Background Gradient
-*/
-#bg-gradient {
-  bottom: 0;
-  display: block;
-  height: 100%;
-  left: 0;
-  overflow: auto;
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 100%;
-  z-index: -1;
-}
-
-/*
   Top Navigation Bar
 */
 .navbar {
-  background-color: #333;
+  background-color: #4C594F;
   position: fixed;
   top: 0;
   width: 100%;
@@ -50,7 +35,7 @@ body::-webkit-scrollbar {
 }
 
 .navitem {
-  color: pink;
+  color: #F0F1F2;
   display: block;
   float: left;
   font-size: 32px;
@@ -59,17 +44,21 @@ body::-webkit-scrollbar {
   text-decoration: none;
 }
 
+.navitem.title {
+  padding-left: 20px;
+}
+
 .navitem.active {
-  background-color: aquamarine;
+  background-color: #B6BFB0;
 }
 
 .navitem.active a {
-  color: #333;
+  color: #4C594F;
 }
 
 .gallery-control {
   float: right;
-  color: pink;
+  color: #B6BFB0;
 }
 
 .dropdown {
@@ -82,11 +71,12 @@ body::-webkit-scrollbar {
   top: 53px;
   right: 5px;
   font-size: medium;
-  background-color: #333;
+  background-color: #4C594F;
   text-decoration: none;
 }
 
 .dropdown-item {
+  color: #F0F1F2;
   display: block;
   outline: auto;
   white-space: nowrap;
@@ -94,7 +84,7 @@ body::-webkit-scrollbar {
 }
 
 .dropdown-item.active, .dropdown-item:hover {
-  background-color: salmon;
+  background-color: #B6BFB0;
 }
 
 .dropdown:hover .dropdown-content {
@@ -103,15 +93,15 @@ body::-webkit-scrollbar {
 }
 
 .page-icon a {
-  color: pink
+  color: #F0F1F2;
 }
 
 .page-icon:hover {
-  background-color: aquamarine;
+  background-color: #708C64;
 }
 
 .page-icon:hover a {
-  color: #333;
+  color: #4C594F;
 }
 
 /*
