@@ -20,6 +20,7 @@ var Command = &cli.Command{
 		&cli.StringFlag{
 			Name:     "source_dir",
 			Aliases:  []string{"s"},
+			EnvVars:  []string{"FP_STORE_SOURCE_DIR"},
 			Usage:    "Copy images from `SOURCE_DIR`",
 			Required: true,
 		},
