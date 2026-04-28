@@ -56,34 +56,32 @@ func Action(cCtx *cli.Context) error {
 
 	dbc, bh := imagedb.InitFirebase()
 
-	/*
-		imagesRef := dbc.NewRef("images")
-		imageNames := map[string]bool{}
-		err := imagesRef.GetShallow(context.Background(), &imageNames)
-		if err != nil {
-			return err
-		}
-		_, ok := imageNames[imageName]
-		if ok {
-			return fmt.Errorf("%v ALREADY EXISTS", imageName)
-		}
+	imagesRef := dbc.NewRef("images")
+	imageNames := map[string]bool{}
+	err := imagesRef.GetShallow(context.Background(), &imageNames)
+	if err != nil {
+		return err
+	}
+	_, ok := imageNames[imageName]
+	if ok {
+		return fmt.Errorf("%v ALREADY EXISTS", imageName)
+	}
 
-		imageCountRef := dbc.NewRef("imageCount")
-		imageCount := 0
-		err = imageCountRef.Get(context.Background(), &imageCount)
-		if err != nil {
-			return err
-		}
-	*/
+	imageCountRef := dbc.NewRef("imageCount")
+	imageCount := 0
+	err = imageCountRef.Get(context.Background(), &imageCount)
+	if err != nil {
+		return err
+	}
 
 	log.Printf("UPLOADING: %v", imageName)
-	err := Upload(dbc, bh, imageName, publishPath, tags, 0)
+	err = Upload(dbc, bh, imageName, publishPath, tags, imageCount)
 	if err != nil {
 		log.Printf("NOT UPLOADED: %v", imageName)
-	} /*else {
+	} else {
 		imageCountRef.Set(context.Background(), imageCount+1)
 		log.Printf("UPLOADED: %v", imageName)
-	}*/
+	}
 
 	return err
 }
