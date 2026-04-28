@@ -7,6 +7,7 @@ import (
 	"fp/add"
 	"fp/clean"
 	"fp/delete"
+	"fp/query"
 	"fp/store"
 	"fp/validate"
 
@@ -24,6 +25,7 @@ var app = &cli.App{
 		delete.Command,
 		store.Command,
 		validate.Command,
+		query.Command,
 	},
 }
 
