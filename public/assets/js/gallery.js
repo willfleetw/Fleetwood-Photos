@@ -96,7 +96,7 @@ function addToDropdownFilter(tags) {
 }
 
 function addImageTile(image) {
-  let miniURL = 'https://firebasestorage.googleapis.com/v0/b/fleetwood-photos.appspot.com/o/images%2Fmini%2F' + image.name + '.jpg?alt=media'
+  let miniURL = 'https://fleetwood-photos-s3-bucket-087666071247-us-west-1-an.s3.us-west-1.amazonaws.com/mini/' + image.name + '.jpg?alt=media'
   addToDropdownFilter(image.meta.tags);
 
   let tileClass = 'grid-item';
@@ -142,9 +142,9 @@ async function getImages() {
 async function loadImages(delay = 600) {
   const throttle = (callback, time) => {
     if (throttleTimer) return;
-   
+
     throttleTimer = true;
-   
+
     setTimeout(() => {
       callback();
       throttleTimer = false;
@@ -172,10 +172,10 @@ async function loadImages(delay = 600) {
     imageQueryLimit = 12;
     if (mqls[0].matches) {
       imageQueryLimit = 10;
-    } 
+    }
     if (mqls[1].matches) {
       imageQueryLimit = 8;
-    } 
+    }
     if (mqls[2].matches) {
       imageQueryLimit = 5;
     }
