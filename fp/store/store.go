@@ -3,9 +3,11 @@ package store
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path"
+	"slices"
 	"strings"
 
 	"github.com/rwcarlsen/goexif/exif"
@@ -45,7 +47,7 @@ var Command = &cli.Command{
 	Action: Action,
 }
 
-var fileTypeSuffixes = []string{".RAF", ".JPEG", ".JPG", ".RAW", ".PNG"}
+var imageExtensions = []string{".RAF", ".JPEG", ".JPG", ".RAW", ".PNG"}
 
 func Action(cCtx *cli.Context) error {
 	sourceDir := cCtx.String("source_dir")
@@ -62,84 +64,86 @@ func Action(cCtx *cli.Context) error {
 		if dirEntry.IsDir() {
 			continue
 		}
-		for _, type_suffix := range fileTypeSuffixes {
-			if strings.HasSuffix(dirEntry.Name(), strings.ToUpper(type_suffix)) || strings.HasSuffix(dirEntry.Name(), strings.ToLower(type_suffix)) {
-				images = append(images, dirEntry.Name())
-			}
+
+		fileExtension := strings.ToUpper(path.Ext(dirEntry.Name()))
+		if slices.Contains(imageExtensions, fileExtension) {
+			images = append(images, dirEntry.Name())
 		}
 	}
 
-	imageErrors := make(chan error, len(images))
-	for _, image := range images {
-		go store_image(image, sourceDir, parentDestDir, deleteOriginals, imageErrors)
-	}
-
 	var finalErr error
-	for range images {
-		finalErr = errors.Join(finalErr, <-imageErrors)
+	for _, image := range images {
+		errors.Join(finalErr, store_image(image, sourceDir, parentDestDir, deleteOriginals))
 	}
 
 	return finalErr
 }
 
-func store_image(image string, sourceDir string, parentDestDir string, deleteOriginals bool, errors chan error) {
+func store_image(image string, sourceDir string, parentDestDir string, deleteOriginals bool) error {
 	imagePath := path.Join(sourceDir, image)
-	dateTime, err := get_datetime(imagePath)
+
+	srcInfo, err := os.Stat(imagePath)
 	if err != nil {
-		errors <- fmt.Errorf("failed to get datetime from exif for %s: %w", image, err)
-		return
+		return fmt.Errorf("failed to get permission info for %s: %w", image, err)
 	}
 
-	dateTimeDir := path.Join(parentDestDir, dateTime)
+	source, err := os.Open(imagePath)
+	if err != nil {
+		return fmt.Errorf("failed to open %s: %w", image, err)
+	}
+	defer source.Close()
+
+	exif, err := exif.Decode(source)
+	if err != nil {
+		return fmt.Errorf("failed to get datetime from EXIF for %s: %w", image, err)
+	}
+
+	dateTime, err := exif.DateTime()
+	if err != nil {
+		return fmt.Errorf("failed to get datetime from EXIF for %s: %w", image, err)
+	}
+
+	// Grabbing EXIF data reads from file, so reset offset back to start of file before copying
+	_, err = source.Seek(0, 0)
+	if err != nil {
+		return fmt.Errorf("failed to set file offset to 0 for %s: %w", image, err)
+	}
+
+	dateDirPath := fmt.Sprintf("%d/%d_%.2d_%.2d", dateTime.Year(), dateTime.Year(), int(dateTime.Month()), dateTime.Day())
+
+	dateTimeDir := path.Join(parentDestDir, dateDirPath)
 	if err := os.MkdirAll(dateTimeDir, os.ModeDir); err != nil {
-		errors <- fmt.Errorf("failed to ensure %s exists before copying: %w", dateTimeDir, err)
-		return
+		return fmt.Errorf("failed to ensure %s exists before copying: %w", dateTimeDir, err)
 	}
 
 	destPath := path.Join(dateTimeDir, image)
-	log.Printf("COPYING: %s -> %s", imagePath, destPath)
-	input, err := os.ReadFile(imagePath)
+	destination, err := os.Create(destPath)
 	if err != nil {
-		errors <- fmt.Errorf("failed to read %s for copying: %w", image, err)
-		return
+		return fmt.Errorf("failed to create %s: %w", destPath, err)
+	}
+	defer destination.Close()
+
+	log.Printf("COPYING: %s -> %s", imagePath, destPath)
+	_, err = io.Copy(destination, source)
+	if err != nil {
+		return fmt.Errorf("failed to copy %s to %s: %w", image, destPath, err)
 	}
 
-	err = os.WriteFile(destPath, input, 0644)
+	err = os.Chmod(destPath, srcInfo.Mode())
 	if err != nil {
-		errors <- fmt.Errorf("failed to copy %s to %s: %w", image, destPath, err)
-		return
+		return fmt.Errorf("failed to set permissions for %s: %w", destPath, err)
 	}
+
 	log.Printf("COPIED: %s -> %s", imagePath, destPath)
 
 	if deleteOriginals {
 		log.Printf("DELETING: %s", imagePath)
 		err = os.Remove(imagePath)
 		if err != nil {
-			errors <- fmt.Errorf("failed to delete original %s: %w", image, err)
-			return
+			return fmt.Errorf("failed to delete original %s: %w", image, err)
 		}
 		log.Printf("DELETED: %s", imagePath)
 	}
 
-	errors <- nil
-}
-
-func get_datetime(filePath string) (string, error) {
-	f, err := os.Open(filePath)
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
-
-	exif, err := exif.Decode(f)
-	if err != nil {
-		return "", err
-	}
-
-	dateTime, err := exif.DateTime()
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("%d_%.2d_%.2d", dateTime.Year(), int(dateTime.Month()), dateTime.Day()), nil
+	return nil
 }
