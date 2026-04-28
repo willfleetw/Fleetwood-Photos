@@ -64,8 +64,8 @@ func validate(dbc *db.Client, bh *storage.BucketHandle) error {
 		log.Fatal(err)
 	}
 	client := s3.NewFromConfig(cfg)
-	var bucketName string
 
+	var bucketName string
 	dbc.NewRef("bucket_name").Get(context.Background(), &bucketName)
 
 	for name, entry := range images {
