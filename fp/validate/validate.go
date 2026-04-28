@@ -7,6 +7,11 @@ import (
 
 	"fp/imagedb"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+
 	"cloud.google.com/go/storage"
 	"firebase.google.com/go/db"
 	"github.com/urfave/cli/v2"
@@ -54,8 +59,17 @@ func validate(dbc *db.Client, bh *storage.BucketHandle) error {
 		return fmt.Errorf("mismatch between /imageCount (%v) and number of image entries (%v)", imageCount, len(images))
 	}
 
+	cfg, err := config.LoadDefaultConfig(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+	client := s3.NewFromConfig(cfg)
+	var bucketName string
+
+	dbc.NewRef("bucket_name").Get(context.Background(), &bucketName)
+
 	for name, entry := range images {
-		if err = validateImage(bh, name, entry); err != nil {
+		if err = validateImage(client, bucketName, name, entry); err != nil {
 			return err
 		}
 		log.Printf("%v = VALID", name)
@@ -64,7 +78,7 @@ func validate(dbc *db.Client, bh *storage.BucketHandle) error {
 	return nil
 }
 
-func validateImage(bh *storage.BucketHandle, name string, entry imagedb.ImageEntry) error {
+func validateImage(client *s3.Client, bucketName string, name string, entry imagedb.ImageEntry) error {
 	if err := ensureUniqueTagForSet(entry.Tags, imagedb.OrientationTags, "orientation"); err != nil {
 		return fmt.Errorf("%v = INVALID: tags (%v) has %w", name, entry.Tags, err)
 	}
@@ -81,34 +95,27 @@ func validateImage(bh *storage.BucketHandle, name string, entry imagedb.ImageEnt
 		return fmt.Errorf("%v = INVALID: imageSize (%v) <= 0", name, entry.Size)
 	}
 
-	if err := ensureValidBlobStorage(bh, name, entry); err != nil {
+	if err := ensureValidBlobStorage(client, bucketName, name, entry); err != nil {
 		return fmt.Errorf("%v = INVALID: invalid blob storage: %w", name, err)
 	}
 
 	return nil
 }
 
-func ensureValidBlobStorage(bh *storage.BucketHandle, name string, entry imagedb.ImageEntry) error {
-	objectHandle := bh.Object(fmt.Sprintf("images/mini/%v.jpg", name))
-	miniImageAttr, err := objectHandle.Attrs(context.Background())
+func ensureValidBlobStorage(client *s3.Client, bucketName string, name string, entry imagedb.ImageEntry) error {
+	attributes, err := client.GetObjectAttributes(context.Background(), &s3.GetObjectAttributesInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String("mini/" + name + ".jpg"),
+		ObjectAttributes: []types.ObjectAttributes{
+			types.ObjectAttributesObjectSize,
+		},
+	})
 	if err != nil {
-		return fmt.Errorf("failed to get MINI file: %w", err)
+		return fmt.Errorf("failed to get object attributes from S3 bucket: %w", err)
 	}
 
-	if miniImageAttr.Size != entry.Size {
-		return fmt.Errorf("difference between MINI.Size attribute (%v) and db entry (%v)", miniImageAttr.Size, entry.Size)
-	}
-
-	objectHandle = bh.Object(fmt.Sprintf("images/small/%v.jpg", name))
-	_, err = objectHandle.Attrs(context.Background())
-	if err != nil {
-		return fmt.Errorf("failed to get SMALL file: %w", err)
-	}
-
-	objectHandle = bh.Object(fmt.Sprintf("images/large/%v.jpg", name))
-	_, err = objectHandle.Attrs(context.Background())
-	if err != nil {
-		return fmt.Errorf("failed to get LARGE file: %w", err)
+	if entry.Size != *attributes.ObjectSize {
+		return fmt.Errorf("difference between object size attribute (%d) and db entry (%d)", *attributes.ObjectSize, entry.Size)
 	}
 
 	return nil
