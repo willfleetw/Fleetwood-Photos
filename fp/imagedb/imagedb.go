@@ -5,9 +5,10 @@ import (
 	"log"
 	"os"
 
-	"cloud.google.com/go/storage"
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/db"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 type ImageEntry struct {
@@ -21,7 +22,7 @@ var (
 	SpectrumTags    = []string{"blackandwhite", "color"}
 )
 
-func InitFirebase() (*db.Client, *storage.BucketHandle) {
+func InitCloudClients() (*db.Client, *s3.Client) {
 	if _, envSet := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS"); !envSet {
 		log.Fatal("error: must be set GOOGLE_APPLICATION_CREDENTIALS before running")
 	}
@@ -36,14 +37,11 @@ func InitFirebase() (*db.Client, *storage.BucketHandle) {
 		log.Fatalf("error getting database client: %v", err)
 	}
 
-	storageClient, err := fbApp.Storage(context.Background())
+	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
-		log.Fatalf("error getting storage client: %v", err)
+		log.Fatal(err)
 	}
-	bucketHandle, err := storageClient.Bucket("fleetwood-photos.appspot.com")
-	if err != nil {
-		log.Fatalf("error getting storage bucket handle: %v", err)
-	}
+	s3Client := s3.NewFromConfig(cfg)
 
-	return dbClient, bucketHandle
+	return dbClient, s3Client
 }

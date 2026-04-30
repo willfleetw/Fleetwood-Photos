@@ -18,7 +18,7 @@ var Command = &cli.Command{
 }
 
 func Action(cCtx *cli.Context) error {
-	dbc, _ := imagedb.InitFirebase()
+	dbc, _ := imagedb.InitCloudClients()
 	ref := dbc.NewRef("images")
 	query := ref.OrderByChild("priority")
 

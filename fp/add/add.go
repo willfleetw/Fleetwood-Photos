@@ -8,11 +8,9 @@ import (
 	"log"
 	"os"
 
-	"cloud.google.com/go/storage"
 	"firebase.google.com/go/db"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/urfave/cli/v2"
@@ -54,9 +52,9 @@ func Action(cCtx *cli.Context) error {
 	publishPath := cCtx.String("publish_path")
 	tags := cCtx.StringSlice("tags")
 
-	dbc, bh := imagedb.InitFirebase()
+	dbClient, s3Client := imagedb.InitCloudClients()
 
-	imagesRef := dbc.NewRef("images")
+	imagesRef := dbClient.NewRef("images")
 	imageNames := map[string]bool{}
 	err := imagesRef.GetShallow(context.Background(), &imageNames)
 	if err != nil {
@@ -67,7 +65,7 @@ func Action(cCtx *cli.Context) error {
 		return fmt.Errorf("%v ALREADY EXISTS", imageName)
 	}
 
-	imageCountRef := dbc.NewRef("imageCount")
+	imageCountRef := dbClient.NewRef("imageCount")
 	imageCount := 0
 	err = imageCountRef.Get(context.Background(), &imageCount)
 	if err != nil {
@@ -75,7 +73,7 @@ func Action(cCtx *cli.Context) error {
 	}
 
 	log.Printf("UPLOADING: %v", imageName)
-	err = Upload(dbc, bh, imageName, publishPath, tags, imageCount)
+	err = Upload(dbClient, s3Client, imageName, publishPath, tags, imageCount)
 	if err != nil {
 		log.Printf("NOT UPLOADED: %v", imageName)
 	} else {
@@ -87,8 +85,8 @@ func Action(cCtx *cli.Context) error {
 }
 
 func Upload(
-	dbc *db.Client,
-	bh *storage.BucketHandle,
+	dbClient *db.Client,
+	s3Client *s3.Client,
 	imageName string,
 	publishPath string,
 	tags []string,
@@ -120,15 +118,9 @@ func Upload(
 	defer miniImageFile.Close()
 
 	var bucketName string
-	dbc.NewRef("bucket_name").Get(context.Background(), &bucketName)
+	dbClient.NewRef("bucket_name").Get(context.Background(), &bucketName)
 
-	cfg, err := config.LoadDefaultConfig(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-	client := s3.NewFromConfig(cfg)
-
-	_, err = client.PutObject(context.Background(), &s3.PutObjectInput{
+	_, err = s3Client.PutObject(context.Background(), &s3.PutObjectInput{
 		Bucket:      aws.String(bucketName),
 		Key:         aws.String("large/" + imageName + ".jpg"),
 		Body:        largeImageFile,
@@ -138,7 +130,7 @@ func Upload(
 		return fmt.Errorf("error uploading LARGE image %s: %w", largeFilePath, err)
 	}
 
-	_, err = client.PutObject(context.Background(), &s3.PutObjectInput{
+	_, err = s3Client.PutObject(context.Background(), &s3.PutObjectInput{
 		Bucket:      aws.String(bucketName),
 		Key:         aws.String("small/" + imageName + ".jpg"),
 		Body:        smallImageFile,
@@ -159,7 +151,7 @@ func Upload(
 		return fmt.Errorf("seek error for MINI image %v: %w", miniFilePath, err)
 	}
 
-	_, err = client.PutObject(context.Background(), &s3.PutObjectInput{
+	_, err = s3Client.PutObject(context.Background(), &s3.PutObjectInput{
 		Bucket:      aws.String(bucketName),
 		Key:         aws.String("mini/" + imageName + ".jpg"),
 		Body:        miniImageFile,
@@ -177,7 +169,7 @@ func Upload(
 	}
 
 	tags = append(tags, orientation)
-	fileRef := dbc.NewRef(fmt.Sprintf("images/%v", imageName))
+	fileRef := dbClient.NewRef(fmt.Sprintf("images/%v", imageName))
 	imageEntry := imagedb.ImageEntry{
 		Size:     miniFileStat.Size(),
 		Priority: priority,

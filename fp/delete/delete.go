@@ -2,12 +2,12 @@ package delete
 
 import (
 	"context"
-	"fmt"
+	"fp/imagedb"
 	"log"
 
-	"cloud.google.com/go/storage"
-	firebase "firebase.google.com/go"
 	"firebase.google.com/go/db"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/urfave/cli/v2"
 )
 
@@ -30,58 +30,47 @@ var Command = &cli.Command{
 func Action(cCtx *cli.Context) error {
 	imageName := cCtx.String("image")
 
-	fbApp, err := firebase.NewApp(context.Background(), nil)
-	if err != nil {
-		log.Fatalf("error initializing app: %v", err)
-	}
-
-	dbClient, err := fbApp.DatabaseWithURL(context.Background(), "https://fleetwood-photos-default-rtdb.firebaseio.com/")
-	if err != nil {
-		log.Fatalf("error getting database client: %v", err)
-	}
-
-	storageClient, err := fbApp.Storage(context.Background())
-	if err != nil {
-		log.Fatalf("error getting storage client: %v", err)
-	}
-	bucketHandle, err := storageClient.Bucket("fleetwood-photos.appspot.com")
-	if err != nil {
-		log.Fatalf("error getting storage bucket handle: %v", err)
-	}
+	dbClient, s3Client := imagedb.InitCloudClients()
 
 	log.Printf("DELETING: %v", imageName)
-	err = delete(dbClient, bucketHandle, imageName)
+	err := delete(dbClient, s3Client, imageName)
 	if err != nil {
-		log.Printf("NOT DELETED: %v", imageName)
-	} else {
-		log.Printf("DELETED: %v", imageName)
+		return err
 	}
-
-	return err
+	log.Printf("DELETED: %v", imageName)
+	return nil
 }
 
-func delete(dbc *db.Client, bh *storage.BucketHandle, imageName string) error {
-	imageRef := dbc.NewRef(fmt.Sprintf("images/%v", imageName))
+func delete(dbClient *db.Client, s3Client *s3.Client, imageName string) error {
+	imageRef := dbClient.NewRef("images/" + imageName)
 	err := imageRef.Delete(context.Background())
 	if err != nil {
 		return err
 	}
 
-	sizes := []string{"large", "small", "mini"}
-	for _, size := range sizes {
-		oh := bh.Object(fmt.Sprintf("images/%v/%v.jpg", size, imageName))
-		err = oh.Delete(context.Background())
-		if err != nil {
-			return err
-		}
-	}
-
-	imageCountRef := dbc.NewRef("imageCount")
-	imageCount := 0
+	imageCountRef := dbClient.NewRef("imageCount")
+	var imageCount int64
 	err = imageCountRef.Get(context.Background(), &imageCount)
 	if err != nil {
 		return err
 	}
 	err = imageCountRef.Set(context.Background(), imageCount-1)
-	return err
+
+	// TODO update image priorities
+
+	var bucketName string
+	dbClient.NewRef("bucket_name").Get(context.Background(), &bucketName)
+
+	sizes := []string{"large", "small", "mini"}
+	for _, size := range sizes {
+		_, err := s3Client.DeleteObject(context.Background(), &s3.DeleteObjectInput{
+			Bucket: aws.String(bucketName),
+			Key:    aws.String(size + "/" + imageName + ".jpg"),
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
