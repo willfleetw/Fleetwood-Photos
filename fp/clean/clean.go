@@ -12,7 +12,7 @@ import (
 
 var Command = &cli.Command{
 	Name:  "clean",
-	Usage: "Clean the database",
+	Usage: "Clean the database by compacting the image priorities to remove holes created by deleting images. Preserves image order",
 
 	Action: Action,
 }
