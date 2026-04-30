@@ -10,6 +10,9 @@ firebase-debug.*.log*
 # FP artifacts
 fp/bin
 
+# VSCode config
+.vscode/
+
 # Firebase cache
 .firebase/
 
