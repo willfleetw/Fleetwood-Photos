@@ -2,6 +2,7 @@ package imagedb
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 
@@ -44,4 +45,30 @@ func InitCloudClients() (*db.Client, *s3.Client) {
 	s3Client := s3.NewFromConfig(cfg)
 
 	return dbClient, s3Client
+}
+
+func CompactPriorities(dbClient *db.Client) error {
+	ref := dbClient.NewRef("images")
+	query := ref.OrderByChild("priority")
+
+	queryNodes, err := query.GetOrdered(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for idx, entry := range queryNodes {
+		image := ImageEntry{}
+		err := entry.Unmarshal(&image)
+		if err != nil {
+			log.Fatal(err)
+		}
+		image.Priority = idx
+		imageRef := dbClient.NewRef(fmt.Sprintf("images/%s", entry.Key()))
+		err = imageRef.Set(context.Background(), image)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

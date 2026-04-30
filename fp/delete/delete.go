@@ -56,7 +56,10 @@ func delete(dbClient *db.Client, s3Client *s3.Client, imageName string) error {
 	}
 	err = imageCountRef.Set(context.Background(), imageCount-1)
 
-	// TODO update image priorities
+	err = imagedb.CompactPriorities(dbClient)
+	if err != nil {
+		return err
+	}
 
 	var bucketName string
 	dbClient.NewRef("bucket_name").Get(context.Background(), &bucketName)
