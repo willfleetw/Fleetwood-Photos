@@ -57,12 +57,17 @@ func CompactPriorities(dbClient *db.Client) error {
 	}
 
 	for idx, entry := range queryNodes {
-		image := ImageEntry{}
+		var image ImageEntry
 		err := entry.Unmarshal(&image)
 		if err != nil {
-			log.Fatal(err)
+			return err
+		}
+
+		if image.Priority != idx {
+			log.Printf("UPDATING %v priority from %v -> %v", entry.Key(), image.Priority, idx)
 		}
 		image.Priority = idx
+
 		imageRef := dbClient.NewRef(fmt.Sprintf("images/%s", entry.Key()))
 		err = imageRef.Set(context.Background(), image)
 		if err != nil {
