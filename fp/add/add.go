@@ -7,6 +7,7 @@ import (
 	"image/jpeg"
 	"log"
 	"os"
+	"strings"
 
 	"firebase.google.com/go/db"
 
@@ -51,6 +52,9 @@ func Action(cCtx *cli.Context) error {
 	imageName := cCtx.String("image")
 	publishPath := cCtx.String("publish_path")
 	tags := cCtx.StringSlice("tags")
+	for i, tag := range tags {
+		tags[i] = strings.ToLower(tag)
+	}
 
 	dbClient, s3Client := imagedb.InitCloudClients()
 
